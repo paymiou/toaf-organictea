@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="scroll-smooth">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>2026 第八屆 有機'島茶 參展報名系統</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com/"></script>
@@ -53,6 +53,11 @@
         }
         .serif-title {
             font-family: 'Noto Serif TC', serif;
+        }
+        
+        /* 防手機端聚焦放大與無故捲動跳躍 */
+        input, select, textarea {
+            font-size: 16px !important;
         }
     </style>
 </head>
@@ -106,18 +111,15 @@
             <div class="absolute inset-0 bg-gradient-to-b from-earth-900/60 via-earth-900/40 to-earth-50"></div>
             
             <div class="relative max-w-5xl mx-auto px-6 text-center z-10">
-                <!-- 英文標題：加上 whitespace-nowrap 限制，防手機端折行 -->
                 <span class="inline-block text-tea-300 font-bold tracking-widest text-[11px] sm:text-xs md:text-sm lg:text-base mb-4 bg-tea-900/60 px-5 py-1.5 rounded-full border border-tea-500/30 backdrop-blur-sm whitespace-nowrap">
                     THE 8th Organic Tea Taiwan 2026
                 </span>
                 <h1 class="text-4xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg leading-tight tracking-wide serif-title">
                     第八屆 有機'島茶
                 </h1>
-                <!-- 詩意形象文案：手機版依逗號分為三行 -->
                 <p class="text-base sm:text-lg md:text-2xl text-earth-100 mb-10 drop-shadow-md font-light leading-relaxed tracking-wider">
                     每一口有機茶，攏是這塊土地用真心，對全世界講的感謝。
                 </p>
-                <!-- 報名及補件按鈕：手機版寬度縮小成精緻規格 -->
                 <div class="flex flex-row flex-wrap gap-4 justify-center items-center">
                     <a href="#form-section" id="hero-register" onclick="showForm('register')" class="w-52 inline-flex items-center justify-center py-3.5 text-sm sm:text-base font-bold text-tea-900 bg-earth-50 rounded-full hover:bg-white hover:shadow-xl hover:scale-105 transition-all duration-300 group shadow-lg">
                         有機茶農 參展報名
@@ -131,7 +133,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                         </svg>
                     </a>
-                    <!-- 報名截止後，此按鈕會動態顯示 -->
                     <a href="#form-section" id="hero-query-only" onclick="showForm('query')" class="hidden w-52 inline-flex items-center justify-center py-3.5 text-sm sm:text-base font-bold text-tea-900 bg-earth-50 rounded-full hover:bg-white hover:shadow-xl hover:scale-105 transition-all duration-300 group shadow-lg">
                         查詢已報名名單
                         <svg class="w-4 h-4 ml-1.5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -148,7 +149,7 @@
             </div>
         </section>
 
-        <!-- 報名表單/補件/查詢區塊 (預設全部設為 hidden，由 JavaScript 動態檢測時間後顯現) -->
+        <!-- 報名表單/補件/查詢區塊 -->
         <section id="form-section" class="py-20 bg-earth-50">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 
@@ -159,7 +160,6 @@
                             參展資料填寫
                         </h2>
                         
-                        <!-- 紙本下載按鈕（高度適配：小螢幕置中，大螢幕右靠對齊） -->
                         <div class="mt-4 md:absolute md:top-1 md:right-0">
                             <a href="https://drive.google.com/file/d/1ke-h6MIzYxyhDEHdQeHUdPPCmzAdUi-R/view?usp=drive_link" target="_blank" class="inline-flex items-center px-5 py-2.5 text-xs sm:text-sm font-bold text-tea-700 bg-tea-100 hover:bg-tea-200 hover:shadow rounded-full transition-all duration-300 border border-tea-200/50">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -258,7 +258,6 @@
                                         <label class="block text-sm font-bold text-tea-800 mb-2">種植海拔 (公尺) <span class="text-red-500">*</span></label>
                                         <input type="text" id="altitude" name="altitude" required placeholder="如：1200" class="w-full max-w-full px-4 py-3 rounded-xl border border-earth-200 bg-earth-50 text-tea-900 focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors duration-200 box-border text-base">
                                     </div>
-                                    <!-- 採收日期：外層容器加 min-w-0，防止 native date-picker 寬度撐破 Grid -->
                                     <div class="min-w-0">
                                         <label class="block text-sm font-bold text-tea-800 mb-2">採收日期 <span class="text-red-500">*</span></label>
                                         <input type="date" id="harvestDate" name="harvestDate" required class="w-full max-w-full min-w-0 px-4 py-3 rounded-xl border border-earth-200 bg-earth-50 text-tea-900 focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors duration-200 box-border text-base">
@@ -346,7 +345,6 @@
                                     ※ 茶席選填說明：可多選，以利互相媒合。<br>※ 展售期間無提供車馬補助費。
                                 </p>
                                 
-                                <!-- 時段大意願 (單選) -->
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                                     <label class="flex items-center p-4 bg-white border border-earth-200 rounded-xl cursor-pointer hover:border-tea-400 transition-colors">
                                         <input type="radio" name="teaTimeType" value="無法參加茶席展售" class="w-5 h-5 text-tea-600 focus:ring-tea-500 border-gray-300" onchange="toggleTeaTimes(false)">
@@ -362,9 +360,7 @@
                                     </label>
                                 </div>
 
-                                <!-- 複選時段 -->
                                 <div id="teaTimeCheckboxes" class="transition-opacity duration-300 bg-white p-4 sm:p-6 rounded-2xl border border-earth-200 max-w-full">
-                                    <!-- 假日組 -->
                                     <div class="mb-6">
                                         <h4 class="text-sm font-bold text-tea-800 mb-3 flex items-center">
                                             <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span> 假日展售時段
@@ -413,7 +409,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- 平日組 -->
                                     <div>
                                         <h4 class="text-sm font-bold text-tea-800 mb-3 flex items-center">
                                             <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> 平日展售時段
@@ -696,9 +691,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="queryTableBody" class="text-sm sm:text-base">
-                                    <!-- 由 JS 動態寫入 -->
                                 </tbody>
-                                <!-- 載入中動畫 -->
                                 <tr id="queryLoading" class="hidden">
                                     <td colspan="5" class="px-6 py-16 text-center text-earth-500 font-medium">
                                         <div class="flex flex-col items-center justify-center space-y-3">
@@ -710,7 +703,6 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <!-- 無資料狀態 -->
                                 <tr id="queryNoData" class="hidden">
                                     <td colspan="5" class="px-6 py-16 text-center text-earth-400 font-medium italic">
                                         目前暫無已登錄的報名資料。
@@ -755,39 +747,30 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwu17omKJqvKWfjImSzw9i7CPdoLCStNcmxnCIyCsVqxY-A3VCGZZayDQ2Y5OnUu9MMyg/exec';
 
-        // 截止日期設定：2026/8/31 CST 凌晨 12 點 (00:00:00)
         const DEADLINE = new Date('2026-08-31T00:00:00+08:00');
 
-        // 核對當前時間是否已過截止日期
         function isAfterDeadline() {
             return new Date() >= DEADLINE;
         }
 
-        // 動態檢測截止時間
         function checkDeadline() {
             if (isAfterDeadline()) {
-                // 1. 隱藏桌面版導航列的報名與補件連結
                 document.getElementById('nav-register')?.classList.add('hidden');
                 document.getElementById('nav-supplement')?.classList.add('hidden');
                 
-                // 2. 隱藏行動版選單的報名與補件連結
                 document.getElementById('mob-register')?.classList.add('hidden');
                 document.getElementById('mob-supplement')?.classList.add('hidden');
                 
-                // 3. 隱藏 Hero Banner 區的報名與補件按鈕，並顯示單一查詢按鈕
                 document.getElementById('hero-register')?.classList.add('hidden');
                 document.getElementById('hero-supplement')?.classList.add('hidden');
                 document.getElementById('hero-query-only')?.classList.remove('hidden');
                 
-                // 4. 強制載入並顯示「查詢已報名名單」
                 showForm('query');
             } else {
-                // 截止之前，正常顯示「我要報名」
                 showForm('register');
             }
         }
 
-        // 行動端漢堡選單展開/收合控制
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
             const icon = document.getElementById('hamburger-icon');
@@ -800,15 +783,13 @@
             }
         }
 
-        // 驗證茶園照必須剛好為 3 張
         function validateGardenPhotos(input) {
             if (input.files.length > 0 && input.files.length !== 3) {
                 showModal('上傳張數不符', '茶園照必須剛好選擇上傳 3 張照片！<br>請按住 Ctrl 或 Cmd 鍵一次選取剛好 3 張圖片。', false);
-                input.value = ''; // 清空選擇
+                input.value = '';
             }
         }
 
-        // 前端自動化高效壓縮圖片技術
         function compressImageAndGetFile(file) {
             return new Promise((resolve, reject) => {
                 if (!file.type.startsWith('image/')) {
@@ -866,7 +847,6 @@
             });
         }
 
-        // 將檔案轉換為高穩定 Base64 對象
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -880,7 +860,6 @@
             });
         }
 
-        // 同負責人勾選同步
         function toggleSameAsOwner(checkbox) {
             const contactName = document.getElementById('contactName');
             const ownerName = document.getElementById('ownerName');
@@ -895,7 +874,6 @@
             }
         }
 
-        // 負責人變更同步聯絡人
         document.getElementById('ownerName').addEventListener('input', function() {
             const sameAsOwner = document.getElementById('sameAsOwner');
             if (sameAsOwner && sameAsOwner.checked) {
@@ -903,7 +881,6 @@
             }
         });
 
-        // 得獎事蹟切換
         function toggleAwards(isNone) {
             const awardsInput = document.getElementById('awards');
             const awardProofsFile = document.getElementById('awardProofsInput');
@@ -927,7 +904,6 @@
             }
         }
 
-        // 茶席時段多選控制
         function toggleTeaTimes(enable) {
             const checkboxes = document.querySelectorAll('input[name="teaTime"]');
             const container = document.getElementById('teaTimeCheckboxes');
@@ -938,9 +914,7 @@
             container.style.opacity = enable ? '1' : '0.5';
         }
 
-        // 切換表單與查詢模式
         function showForm(type) {
-            // 如果已經截止，強制將試圖進入我要報名或補上文件的請求導向至查詢
             if (isAfterDeadline() && (type === 'register' || type === 'supplement')) {
                 type = 'query';
             }
@@ -986,7 +960,6 @@
             }
         }
 
-        // 報名查詢 - 異步拉取試算表資料
         async function fetchQueryData() {
             const tableBody = document.getElementById('queryTableBody');
             const loadingRow = document.getElementById('queryLoading');
@@ -1020,7 +993,6 @@
             }
         }
 
-        // 渲染查詢表格
         function renderQueryTable(data) {
             const tableBody = document.getElementById('queryTableBody');
             tableBody.innerHTML = '';
@@ -1039,7 +1011,6 @@
             });
         }
 
-        // 前端即時過濾查詢
         function filterQueryData(keyword) {
             if (!window.cachedQueryData) return;
             const kw = keyword.trim().toLowerCase();
@@ -1061,7 +1032,6 @@
             }
         }
 
-        // 智慧一：身份核對防呆關卡
         async function verifySupplementFarmer() {
             const supGardenName = document.getElementById('supGardenName').value.trim();
             const supOwnerName = document.getElementById('supOwnerName').value.trim();
@@ -1136,7 +1106,6 @@
             }
         }
 
-        // 檔案上傳必填邏輯切換
         function toggleUploadSection(mode) {
             const container = document.getElementById('uploadFieldsContainer');
             const fileInputs = container.querySelectorAll('input[type="file"]');
@@ -1158,7 +1127,6 @@
             }
         }
 
-        // 自訂提示視窗
         function showModal(title, message, isSuccess = true) {
             const modal = document.getElementById('successModal');
             const modalContent = document.getElementById('modalContent');
@@ -1191,7 +1159,6 @@
             }, 10);
         }
 
-        // 發送邏輯（整合智慧前端壓縮與 JSON 串接）
         async function sendData(form, submitBtn, successMessage) {
             const originalBtnHtml = submitBtn.innerHTML;
             
@@ -1287,7 +1254,6 @@
             }
         }
 
-        // 主表單提交
         function handleFormSubmit(event) {
             event.preventDefault(); 
             const form = document.getElementById('registrationForm');
@@ -1296,7 +1262,6 @@
             sendData(form, submitBtn, successMsg);
         }
 
-        // 補件表單第二關提交
         function handleSupplementSubmit(event) {
             event.preventDefault(); 
             const form = document.getElementById('supplementForm');
@@ -1305,7 +1270,6 @@
             sendData(form, submitBtn, successMsg);
         }
 
-        // 關閉彈窗
         function closeModal() {
             const modal = document.getElementById('successModal');
             const modalContent = document.getElementById('modalContent');
@@ -1318,7 +1282,6 @@
             }, 300);
         }
 
-        // 滾動導航欄透明度變化
         window.addEventListener('scroll', () => {
             const header = document.querySelector('header');
             if (window.scrollY > 50) {
@@ -1330,7 +1293,6 @@
             }
         });
 
-        // 頁面初始化檢測截止時間
         checkDeadline();
     </script>
 </body>
