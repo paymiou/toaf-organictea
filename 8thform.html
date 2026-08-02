@@ -568,7 +568,7 @@
                     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-tea-100 max-w-full">
                         <form id="supplementForm" class="p-5 sm:p-8 md:p-12" onsubmit="handleSupplementSubmit(event)">
                             
-                            <!-- 第一關：參展身份核對 (改成下拉選單) -->
+                            <!-- 第一關：參展身份核對 -->
                             <div id="sup-step1" class="mb-6">
                                 <h3 class="text-lg sm:text-xl font-bold text-tea-700 mb-6 flex items-center border-b border-tea-100 pb-3">
                                     <span class="w-6 h-6 rounded-full bg-tea-600 text-white flex items-center justify-center text-xs mr-2 font-sans font-bold">1</span>
@@ -914,7 +914,7 @@
             container.style.opacity = enable ? '1' : '0.5';
         }
 
-        // 動態抓取補件廠商選單（抓取 AK 欄位為 0 或 空白）
+        // 動態抓取補件廠商選單（強化過濾：剔除包含 V 的資料，僅保留 0 或 空白）
         async function loadSupplementOptions() {
             const selectEl = document.getElementById('supSelectFarmer');
             if (!selectEl) return;
@@ -926,22 +926,22 @@
                 const json = await res.json();
                 
                 if (json.result === 'success' && json.data) {
-                    // 篩選 AK 欄位為 0 或 空白的廠商資料
+                    // 嚴格比對：轉為大寫並去空格後，只要是 'V' 直接排除
                     const filteredData = json.data.filter(item => {
-                        return item.ak === undefined || item.ak === null || item.ak === '' || item.ak == 0 || item.ak === '0';
+                        const akVal = String(item.ak ?? '').trim().toUpperCase();
+                        if (akVal === 'V') return false; // 排除打 V 的廠商
+                        return akVal === '' || akVal === '0'; // 僅留空白或 0
                     });
 
                     if (filteredData.length > 0) {
                         selectEl.innerHTML = '<option value="" disabled selected>請選擇茶園 / 負責人...</option>';
                         filteredData.forEach(item => {
                             const opt = document.createElement('option');
-                            // 儲存資訊為 JSON 格式，方便選取時讀取
                             opt.value = JSON.stringify({
                                 uid: item.uid,
                                 gardenName: item.gardenName,
                                 ownerName: item.ownerName
                             });
-                            // 下拉選單呈現格式：UID. 茶園名稱 - 負責人姓名
                             opt.textContent = `${item.uid}. ${item.gardenName} - ${item.ownerName}`;
                             selectEl.appendChild(opt);
                         });
@@ -991,7 +991,6 @@
                 
                 document.getElementById('sup-step2').classList.add('hidden');
                 
-                // 自動載入下拉選單選項
                 loadSupplementOptions();
             } else if (type === 'query') {
                 regWrapper.classList.add('hidden');
@@ -1073,7 +1072,6 @@
             }
         }
 
-        // 下拉選單選取與確認
         function verifySupplementFarmer() {
             const selectEl = document.getElementById('supSelectFarmer');
             const verifyBtn = document.getElementById('supVerifyBtn');
@@ -1086,12 +1084,10 @@
             try {
                 const selectedData = JSON.parse(selectEl.value);
                 
-                // 自動填入隱藏欄位供 GAS 判斷資料夾
                 document.getElementById('supGardenName').value = selectedData.gardenName;
                 document.getElementById('supOwnerName').value = selectedData.ownerName;
                 document.getElementById('supUid').value = selectedData.uid;
 
-                // 開啟第二關上傳檔案
                 document.getElementById('sup-step2').classList.remove('hidden');
                 
                 selectEl.disabled = true;
