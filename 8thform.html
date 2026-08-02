@@ -562,31 +562,31 @@
                     <div class="text-center mb-12 relative px-2">
                         <h2 class="text-3xl md:text-4xl font-bold text-tea-800 mb-4 tracking-wider serif-title">補傳報名文件</h2>
                         <div class="w-24 h-1 bg-tea-500 mx-auto mb-6 rounded-full"></div>
-                        <p class="text-earth-800 text-sm sm:text-lg">補件分為兩關卡：請填寫「茶園、負責人」資料核對，核對成功後方可開始上傳。</p>
+                        <p class="text-earth-800 text-sm sm:text-lg">補件分為兩關卡：請選取您的「UID. 茶園名稱 - 負責人姓名」，選定後方可開始上傳。</p>
                     </div>
 
                     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-tea-100 max-w-full">
                         <form id="supplementForm" class="p-5 sm:p-8 md:p-12" onsubmit="handleSupplementSubmit(event)">
                             
-                            <!-- 第一關：參展身份核對 -->
+                            <!-- 第一關：參展身份核對 (改成下拉選單) -->
                             <div id="sup-step1" class="mb-6">
                                 <h3 class="text-lg sm:text-xl font-bold text-tea-700 mb-6 flex items-center border-b border-tea-100 pb-3">
                                     <span class="w-6 h-6 rounded-full bg-tea-600 text-white flex items-center justify-center text-xs mr-2 font-sans font-bold">1</span>
-                                    第一關：核對參展身份
+                                    第一關：選擇參展身份
                                 </h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-6">
-                                    <div>
-                                        <label class="block text-sm font-bold text-tea-800 mb-2">茶園名稱 <span class="text-red-500">*</span></label>
-                                        <input type="text" id="supGardenName" name="gardenName" required class="w-full max-w-full px-4 py-3 rounded-xl border border-earth-200 bg-earth-50 text-tea-900 focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors duration-200 box-border text-base">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-tea-800 mb-2">負責人姓名 <span class="text-red-500">*</span></label>
-                                        <input type="text" id="supOwnerName" name="ownerName" required class="w-full max-w-full px-4 py-3 rounded-xl border border-earth-200 bg-earth-50 text-tea-900 focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors duration-200 box-border text-base">
-                                    </div>
+                                <div class="mb-6">
+                                    <label class="block text-sm font-bold text-tea-800 mb-2">請選擇茶園/負責人資料 <span class="text-red-500">*</span></label>
+                                    <select id="supSelectFarmer" class="w-full max-w-full px-4 py-3 rounded-xl border border-earth-200 bg-earth-50 text-tea-900 focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors duration-200 text-base box-border">
+                                        <option value="" disabled selected>載入中，請稍候...</option>
+                                    </select>
+                                    <!-- 隱藏欄位：儲存表單需要的茶園名稱、負責人姓名及 UID -->
+                                    <input type="hidden" id="supGardenName" name="gardenName">
+                                    <input type="hidden" id="supOwnerName" name="ownerName">
+                                    <input type="hidden" id="supUid" name="uid">
                                 </div>
                                 <div class="flex justify-center">
                                     <button type="button" id="supVerifyBtn" onclick="verifySupplementFarmer()" class="px-8 py-3 bg-tea-600 text-white font-bold rounded-full hover:bg-tea-500 hover:shadow-md transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center text-sm sm:text-base">
-                                        核對報名資料
+                                        確認選擇並開啟上傳區
                                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     </button>
                                 </div>
@@ -914,6 +914,49 @@
             container.style.opacity = enable ? '1' : '0.5';
         }
 
+        // 動態抓取補件廠商選單（抓取 AK 欄位為 0 或 空白）
+        async function loadSupplementOptions() {
+            const selectEl = document.getElementById('supSelectFarmer');
+            if (!selectEl) return;
+            
+            selectEl.innerHTML = '<option value="" disabled selected>載入資料中，請稍候...</option>';
+            
+            try {
+                const res = await fetch(SCRIPT_URL);
+                const json = await res.json();
+                
+                if (json.result === 'success' && json.data) {
+                    // 篩選 AK 欄位為 0 或 空白的廠商資料
+                    const filteredData = json.data.filter(item => {
+                        return item.ak === undefined || item.ak === null || item.ak === '' || item.ak == 0 || item.ak === '0';
+                    });
+
+                    if (filteredData.length > 0) {
+                        selectEl.innerHTML = '<option value="" disabled selected>請選擇茶園 / 負責人...</option>';
+                        filteredData.forEach(item => {
+                            const opt = document.createElement('option');
+                            // 儲存資訊為 JSON 格式，方便選取時讀取
+                            opt.value = JSON.stringify({
+                                uid: item.uid,
+                                gardenName: item.gardenName,
+                                ownerName: item.ownerName
+                            });
+                            // 下拉選單呈現格式：UID. 茶園名稱 - 負責人姓名
+                            opt.textContent = `${item.uid}. ${item.gardenName} - ${item.ownerName}`;
+                            selectEl.appendChild(opt);
+                        });
+                    } else {
+                        selectEl.innerHTML = '<option value="" disabled selected>目前無需要補件的茶園資料</option>';
+                    }
+                } else {
+                    selectEl.innerHTML = '<option value="" disabled selected>無法取得報名名單，請重試</option>';
+                }
+            } catch (err) {
+                console.error('Load supplement options error:', err);
+                selectEl.innerHTML = '<option value="" disabled selected>載入失敗，請確認連線</option>';
+            }
+        }
+
         function showForm(type) {
             if (isAfterDeadline() && (type === 'register' || type === 'supplement')) {
                 type = 'query';
@@ -935,23 +978,21 @@
                 const form = document.getElementById('supplementForm');
                 form.reset();
                 
-                const gInput = document.getElementById('supGardenName');
-                const oInput = document.getElementById('supOwnerName');
-                gInput.readOnly = false;
-                oInput.readOnly = false;
-                gInput.className = "w-full max-w-full px-4 py-3 rounded-xl border border-earth-200 bg-earth-50 text-tea-900 focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors duration-200 box-border text-base";
-                oInput.className = "w-full max-w-full px-4 py-3 rounded-xl border border-earth-200 bg-earth-50 text-tea-900 focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors duration-200 box-border text-base";
+                const selectEl = document.getElementById('supSelectFarmer');
+                if (selectEl) selectEl.disabled = false;
                 
                 const verifyBtn = document.getElementById('supVerifyBtn');
                 verifyBtn.disabled = false;
                 verifyBtn.innerHTML = `
-                    核對報名資料
+                    確認選擇並開啟上傳區
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 `;
                 verifyBtn.className = "px-8 py-3 bg-tea-600 text-white font-bold rounded-full hover:bg-tea-500 hover:shadow-md transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center text-sm sm:text-base";
                 
                 document.getElementById('sup-step2').classList.add('hidden');
                 
+                // 自動載入下拉選單選項
+                loadSupplementOptions();
             } else if (type === 'query') {
                 regWrapper.classList.add('hidden');
                 supWrapper.classList.add('hidden');
@@ -1032,77 +1073,43 @@
             }
         }
 
-        async function verifySupplementFarmer() {
-            const supGardenName = document.getElementById('supGardenName').value.trim();
-            const supOwnerName = document.getElementById('supOwnerName').value.trim();
+        // 下拉選單選取與確認
+        function verifySupplementFarmer() {
+            const selectEl = document.getElementById('supSelectFarmer');
             const verifyBtn = document.getElementById('supVerifyBtn');
             
-            if (!supGardenName || !supOwnerName) {
-                showModal('資料未填寫', '請先輸入<b>「茶園名稱」</b>與<b>「負責人姓名」</b>進行驗證核對！', false);
+            if (!selectEl.value) {
+                showModal('資料未選擇', '請先從下拉選單中選取您的<b>「茶園/負責人」</b>資料！', false);
                 return;
             }
 
-            const originalBtnHtml = verifyBtn.innerHTML;
-            verifyBtn.disabled = true;
-            verifyBtn.innerHTML = `
-                正在核對報名資料...
-                <svg class="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-            `;
-            verifyBtn.classList.add('opacity-75', 'cursor-not-allowed');
-
             try {
-                const res = await fetch(SCRIPT_URL);
-                const json = await res.json();
+                const selectedData = JSON.parse(selectEl.value);
                 
-                if (json.result === 'success' && json.data) {
-                    const match = json.data.find(item => 
-                        item.gardenName.replace(/\s+/g, '') === supGardenName.replace(/\s+/g, '') &&
-                        item.ownerName.replace(/\s+/g, '') === supOwnerName.replace(/\s+/g, '')
-                    );
-                    
-                    if (!match) {
-                        showModal(
-                            '尚未報名', 
-                            '系統查無此<b>「茶園名稱」</b>與<b>「負責人姓名」</b>的報名紀錄。<br><br>您必須先完成首頁的<b>「我要報名」</b>基本資料填寫，取得 UID 後才可以進行檔案補傳！', 
-                            false
-                        );
-                        verifyBtn.disabled = false;
-                        verifyBtn.innerHTML = originalBtnHtml;
-                        verifyBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-                        return;
-                    }
+                // 自動填入隱藏欄位供 GAS 判斷資料夾
+                document.getElementById('supGardenName').value = selectedData.gardenName;
+                document.getElementById('supOwnerName').value = selectedData.ownerName;
+                document.getElementById('supUid').value = selectedData.uid;
 
-                    document.getElementById('sup-step2').classList.remove('hidden');
-                    
-                    const gInput = document.getElementById('supGardenName');
-                    const oInput = document.getElementById('supOwnerName');
-                    gInput.readOnly = true;
-                    oInput.readOnly = true;
-                    gInput.className = "w-full max-w-full px-4 py-3 rounded-xl border border-earth-200 bg-earth-200 text-earth-500 cursor-not-allowed transition-colors duration-200 text-base box-border";
-                    oInput.className = "w-full max-w-full px-4 py-3 rounded-xl border border-earth-200 bg-earth-200 text-earth-500 cursor-not-allowed transition-colors duration-200 text-base box-border";
-                    
-                    verifyBtn.innerHTML = `
-                        驗證成功 ✓
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                    `;
-                    verifyBtn.className = "px-8 py-3 bg-green-600 text-white font-bold rounded-full flex items-center justify-center cursor-not-allowed text-sm sm:text-base";
-                    
-                    setTimeout(() => {
-                        document.getElementById('sup-step2').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 100);
+                // 開啟第二關上傳檔案
+                document.getElementById('sup-step2').classList.remove('hidden');
+                
+                selectEl.disabled = true;
+                
+                verifyBtn.innerHTML = `
+                    已選擇：${selectedData.uid}. ${selectedData.gardenName} ✓
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                `;
+                verifyBtn.className = "px-8 py-3 bg-green-600 text-white font-bold rounded-full flex items-center justify-center cursor-not-allowed text-sm sm:text-base";
+                verifyBtn.disabled = true;
+                
+                setTimeout(() => {
+                    document.getElementById('sup-step2').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
 
-                } else {
-                    throw new Error('名單載入異常');
-                }
             } catch (err) {
-                console.error('Validation error:', err);
-                showModal('核對失敗', '因目前網路連線或伺服器忙碌，無法完成報名資格驗證。請確認您的網路狀況，或稍後再試一次！', false);
-                verifyBtn.disabled = false;
-                verifyBtn.innerHTML = originalBtnHtml;
-                verifyBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                console.error('Verify selection error:', err);
+                showModal('選擇失敗', '讀取選擇資料發生異常，請重新選擇。', false);
             }
         }
 
