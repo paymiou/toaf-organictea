@@ -679,36 +679,30 @@
                     </div>
 
                     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-tea-100 max-w-full">
-                        <div class="overflow-x-auto w-full">
-                            <table class="w-full text-left border-collapse min-w-[600px] sm:min-w-0">
-                                <thead>
-                                    <tr class="bg-tea-100 text-tea-900 font-bold text-sm md:text-base border-b border-tea-200">
-                                        <th class="px-4 sm:px-6 py-4 text-center w-16 sm:w-24">UID</th>
-                                        <th class="px-4 sm:px-6 py-4">茶園名稱</th>
-                                        <th class="px-4 sm:px-6 py-4">負責人</th>
-                                        <th class="px-4 sm:px-6 py-4">推薦茶品名/自信作</th>
-                                        <th class="px-4 sm:px-6 py-4">茶葉產區</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="queryTableBody" class="text-sm sm:text-base">
-                                </tbody>
-                                <tr id="queryLoading" class="hidden">
-                                    <td colspan="5" class="px-6 py-16 text-center text-earth-500 font-medium">
-                                        <div class="flex flex-col items-center justify-center space-y-3">
-                                            <svg class="animate-spin h-8 w-8 text-tea-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            <span>讀取最新報名清單中，請稍候...</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr id="queryNoData" class="hidden">
-                                    <td colspan="5" class="px-6 py-16 text-center text-earth-400 font-medium italic">
-                                        目前暫無已登錄的報名資料。
-                                    </td>
-                                </tr>
-                            </table>
+
+                        <!-- 🟢 1. 外層容器設定 overflow-x-auto，內部表格加上 table-fixed 與 min-w-[750px] -->
+<div class="overflow-x-auto w-full">
+    <table class="w-full text-left border-collapse min-w-[750px] table-fixed">
+        <thead>
+            <tr class="bg-tea-100 text-tea-900 font-bold text-sm md:text-base border-b border-tea-200">
+                <!-- 🟢 2. 為每個欄位寫死比例欄寬，防止擠壓 -->
+                <th class="px-4 sm:px-6 py-4 text-center w-20">UID</th>
+                <th class="px-4 sm:px-6 py-4 w-52">茶園名稱</th>
+                <th class="px-4 sm:px-6 py-4 w-32">負責人</th>
+                <th class="px-4 sm:px-6 py-4 w-48">推薦茶品名/自信作</th>
+                <th class="px-4 sm:px-6 py-4 w-36">茶葉產區</th>
+            </tr>
+        </thead>
+        <tbody id="queryTableBody" class="text-sm sm:text-base">
+        </tbody>
+        <tr id="queryLoading" class="hidden">
+            ...
+        </tr>
+        <tr id="queryNoData" class="hidden">
+            ...
+        </tr>
+    </table>
+
                         </div>
                     </div>
                 </div> <!-- 結束 query-wrapper -->
@@ -1033,23 +1027,24 @@
             }
         }
 
-        function renderQueryTable(data) {
-            const tableBody = document.getElementById('queryTableBody');
-            tableBody.innerHTML = '';
-            
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = 'border-b border-earth-100 hover:bg-tea-50/50 transition-colors';
-                tr.innerHTML = `
-                    <td class="px-4 sm:px-6 py-4 text-center font-bold text-tea-700">${item.uid}</td>
-                    <td class="px-4 sm:px-6 py-4 font-bold text-earth-900">${item.gardenName}</td>
-                    <td class="px-4 sm:px-6 py-4 text-earth-800">${item.ownerName}</td>
-                    <td class="px-4 sm:px-6 py-4 text-earth-800">${item.teaName}</td>
-                    <td class="px-4 sm:px-6 py-4 text-earth-600 text-xs sm:text-sm">${item.productionArea}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
-        }
+// 🟢 每個 <td> 皆加上 whitespace-nowrap，過長時會向右延伸並出現滑軌，不再擠壓負責人欄位
+function renderQueryTable(data) {
+    const tableBody = document.getElementById('queryTableBody');
+    tableBody.innerHTML = '';
+    
+    data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-earth-100 hover:bg-tea-50/50 transition-colors';
+        tr.innerHTML = `
+            <td class="px-4 sm:px-6 py-4 text-center font-bold text-tea-700 whitespace-nowrap">${item.uid}</td>
+            <td class="px-4 sm:px-6 py-4 font-bold text-earth-900 whitespace-nowrap">${item.gardenName}</td>
+            <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.ownerName}</td>
+            <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.teaName}</td>
+            <td class="px-4 sm:px-6 py-4 text-earth-600 text-xs sm:text-sm whitespace-nowrap">${item.productionArea}</td>
+        `;
+        tableBody.appendChild(tr);
+    });
+}
 
         function filterQueryData(keyword) {
             if (!window.cachedQueryData) return;
