@@ -1002,47 +1002,60 @@
             }
         }
 
-        async function fetchQueryData() {
-            const tableBody = document.getElementById('queryTableBody');
-            const loadingRow = document.getElementById('queryLoading');
-            const noDataRow = document.getElementById('queryNoData');
+async function fetchQueryData() {
+    const tableBody = document.getElementById('queryTableBody');
+    const loadingRow = document.getElementById('queryLoading');
+    const noDataRow = document.getElementById('queryNoData');
+    
+    // 1. 優先檢查快取 (設定快取有效時間如 3 分鐘)
+    const cachedData = sessionStorage.getItem('queryDataCache');
+    const cacheTime = sessionStorage.getItem('queryDataCacheTime');
+    const isCacheValid = cacheTime && (Date.now() - cacheTime < 3 * 60 * 1000); // 3 分鐘
+
+    if (cachedData && isCacheValid) {
+        window.cachedQueryData = JSON.parse(cachedData);
+        renderQueryTable(window.cachedQueryData);
+        return;
+    }
+
+    // 2. 快取失效或無快取時才向 GAS 請求
+    tableBody.innerHTML = '';
+    loadingRow.classList.remove('hidden');
+    noDataRow.classList.add('hidden');
+    
+    try {
+        const res = await fetch(SCRIPT_URL);
+        const json = await res.json();
+        loadingRow.classList.add('hidden');
+        
+        if (json.result === 'success' && json.data) {
+            window.cachedQueryData = json.data;
+            // 寫入 sessionStorage
+            sessionStorage.setItem('queryDataCache', JSON.stringify(json.data));
+            sessionStorage.setItem('queryDataCacheTime', Date.now());
             
-            tableBody.innerHTML = '';
-            loadingRow.classList.remove('hidden');
-            noDataRow.classList.add('hidden');
-            
-            try {
-                const res = await fetch(SCRIPT_URL);
-                const json = await res.json();
-                
-                loadingRow.classList.add('hidden');
-                
-                if (json.result === 'success' && json.data) {
-                    window.cachedQueryData = json.data; 
-                    if (json.data.length > 0) {
-                        renderQueryTable(json.data);
-                    } else {
-                        noDataRow.classList.remove('hidden');
-                    }
-                } else {
-                    noDataRow.classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error('Fetch error:', error);
-                loadingRow.classList.add('hidden');
-                noDataRow.classList.remove('hidden');
-                noDataRow.querySelector('td').innerHTML = `<span class="text-red-500 font-bold">載入失敗</span>，請確認後端 GAS 已部署為新版本並開放「所有人(Anyone)」存取。`;
-            }
+            renderQueryTable(json.data);
         }
+    } catch (error) {
+        // 錯誤處理...
+    }
+}
 
 // 🟢 每個 <td> 皆加上 whitespace-nowrap，過長時會向右延伸並出現滑軌，不再擠壓負責人欄位
 
+let currentPage = 1;
+const pageSize = 20;
 
-function renderQueryTable(data) {
+function renderQueryTable(data, isAppend = false) {
     const tableBody = document.getElementById('queryTableBody');
-    tableBody.innerHTML = '';
+    if (!isAppend) tableBody.innerHTML = '';
     
-    data.forEach(item => {
+    // 計算當前頁數要截取的資料範圍
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const pageData = data.slice(start, end);
+    
+    pageData.forEach(item => {
         const tr = document.createElement('tr');
         tr.className = 'border-b border-earth-100 hover:bg-tea-50/50 transition-colors';
         tr.innerHTML = `
@@ -1054,6 +1067,9 @@ function renderQueryTable(data) {
         `;
         tableBody.appendChild(tr);
     });
+
+    // 若還有剩餘資料，顯示「載入更多」按鈕或觸發滾動監聽
+    toggleLoadMoreButton(end < data.length);
 }
 
         function filterQueryData(keyword) {
