@@ -684,13 +684,14 @@
 <div class="overflow-x-auto w-full">
     <table class="w-full text-left border-collapse min-w-[700px]">
         <thead>
-            <tr class="bg-tea-100 text-tea-900 font-bold text-sm md:text-base border-b border-tea-200">
-                <th class="px-4 sm:px-6 py-4 text-center whitespace-nowrap">UID</th>
-                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">茶園名稱</th>
-                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">負責人</th>
-                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">推薦茶品名/自信作</th>
-                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">茶葉產區</th>
-            </tr>
+<tr class="bg-tea-100 text-tea-900 font-bold text-sm md:text-base border-b border-tea-200">
+    <th class="px-4 sm:px-6 py-4 text-center whitespace-nowrap">UID</th>
+    <!-- 🟢 調整茶園名稱標題欄位寬度 -->
+    <th class="px-4 sm:px-6 py-4 w-48 min-w-[190px] max-w-[190px] whitespace-normal break-words">茶園名稱</th>
+    <th class="px-4 sm:px-6 py-4 whitespace-nowrap">負責人</th>
+    <th class="px-4 sm:px-6 py-4 whitespace-nowrap">推薦茶品名/自信作</th>
+    <th class="px-4 sm:px-6 py-4 whitespace-nowrap">茶葉產區</th>
+</tr>
         </thead>
         <tbody id="queryTableBody" class="text-sm sm:text-base">
         </tbody>
@@ -1046,27 +1047,24 @@ async function fetchQueryData() {
 let currentPage = 1;
 const pageSize = 20;
 
-function renderQueryTable(data, isAppend = false) {
+function renderQueryTable(data) {
     const tableBody = document.getElementById('queryTableBody');
-    if (!isAppend) tableBody.innerHTML = '';
+    tableBody.innerHTML = '';
     
-    // 計算當前頁數要截取的資料範圍
-    const start = (currentPage - 1) * pageSize;
-    const end = start + pageSize;
-    const pageData = data.slice(start, end);
-    
-    pageData.forEach(item => {
+    data.forEach(item => {
         const tr = document.createElement('tr');
         tr.className = 'border-b border-earth-100 hover:bg-tea-50/50 transition-colors';
         tr.innerHTML = `
             <td class="px-4 sm:px-6 py-4 text-center font-bold text-tea-700 whitespace-nowrap">${item.uid}</td>
-            <td class="px-4 sm:px-6 py-4 font-bold text-earth-900 whitespace-nowrap">${item.gardenName}</td>
+            <!-- 🟢 茶園名稱：固定寬度 190px、過長時自動斷字換行 -->
+            <td class="px-4 sm:px-6 py-4 font-bold text-earth-900 w-48 min-w-[190px] max-w-[190px] whitespace-normal break-words">${item.gardenName}</td>
             <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.ownerName}</td>
             <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.teaName}</td>
             <td class="px-4 sm:px-6 py-4 text-earth-600 text-xs sm:text-sm whitespace-nowrap">${item.productionArea}</td>
         `;
         tableBody.appendChild(tr);
     });
+}
 
     // 若還有剩餘資料，顯示「載入更多」按鈕或觸發滾動監聽
     toggleLoadMoreButton(end < data.length);
