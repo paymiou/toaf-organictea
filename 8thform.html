@@ -658,63 +658,62 @@
                     </div>
                 </div> <!-- 結束 supplement-wrapper -->
 
-<!-- 報名查詢 Wrapper -->
-<div id="query-wrapper" class="hidden w-full max-w-full">
-    <div class="text-center mb-12 relative px-2">
-        <h2 class="text-3xl md:text-4xl font-bold text-tea-800 mb-4 tracking-wider serif-title text-center">
-            已報名名單查詢
-        </h2>
-        <div class="w-24 h-1 bg-tea-500 mx-auto mb-6 rounded-full"></div>
-        <p class="text-earth-800 text-sm sm:text-lg">此表僅公開展示「茶園、負責人、自信作及產區」。</p>
-    </div>
+                <!-- 報名查詢 Wrapper -->
+                <div id="query-wrapper" class="hidden w-full max-w-full">
+                    <div class="text-center mb-12 relative px-2">
+                        <h2 class="text-3xl md:text-4xl font-bold text-tea-800 mb-4 tracking-wider serif-title text-center">
+                            已報名名單查詢
+                        </h2>
+                        <div class="w-24 h-1 bg-tea-500 mx-auto mb-6 rounded-full"></div>
+                        <p class="text-earth-800 text-sm sm:text-lg">此表僅公開展示「茶園、負責人、自信作及產區」。</p>
+                    </div>
 
-    <!-- 搜尋過濾器 -->
-    <div class="mb-8 max-w-md mx-auto px-1">
-        <div class="relative">
-            <input type="text" oninput="filterQueryData(this.value)" placeholder="輸入關鍵字搜尋 茶園 / 負責人 / 產區..." class="w-full pl-12 pr-4 py-3 sm:py-3.5 rounded-full border border-earth-200 bg-white text-tea-900 focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-all shadow-sm text-sm sm:text-base box-border">
-            <div class="absolute left-4 top-3.5 sm:top-4 text-earth-400">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-tea-100 max-w-full">
-
-        <!-- 🟢 1. 容器設定 max-h-[500px] 與 overflow-y-auto 產生垂直捲動軸 -->
-        <div class="overflow-x-auto overflow-y-auto max-h-[500px] w-full relative">
-            <table class="w-full text-left border-collapse min-w-[700px]">
-                <!-- 🟢 2. thead 加上 sticky top-0 z-10 與 bg-tea-100 凍結標題列 -->
-                <thead class="sticky top-0 z-10 bg-tea-100 shadow-sm">
-                    <tr class="text-tea-900 font-bold text-sm md:text-base border-b border-tea-200">
-                        <th class="px-4 sm:px-6 py-4 text-center whitespace-nowrap bg-tea-100">UID</th>
-                        <th class="px-4 sm:px-6 py-4 whitespace-nowrap bg-tea-100">茶園名稱</th>
-                        <th class="px-4 sm:px-6 py-4 whitespace-nowrap bg-tea-100">負責人</th>
-                        <th class="px-4 sm:px-6 py-4 whitespace-nowrap bg-tea-100">推薦茶品名/自信作</th>
-                        <th class="px-4 sm:px-6 py-4 whitespace-nowrap bg-tea-100">茶葉產區</th>
-                    </tr>
-                </thead>
-                <tbody id="queryTableBody" class="text-sm sm:text-base">
-                </tbody>
-                <tr id="queryLoading" class="hidden">
-                    <td colspan="5" class="px-6 py-16 text-center text-earth-500 font-medium">
-                        <div class="flex flex-col items-center justify-center space-y-3">
-                            <svg class="animate-spin h-8 w-8 text-tea-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>讀取最新報名清單中，請稍候...</span>
+                    <!-- 搜尋過濾器 -->
+                    <div class="mb-8 max-w-md mx-auto px-1">
+                        <div class="relative">
+                            <input type="text" oninput="filterQueryData(this.value)" placeholder="輸入關鍵字搜尋 茶園 / 負責人 / 產區..." class="w-full pl-12 pr-4 py-3 sm:py-3.5 rounded-full border border-earth-200 bg-white text-tea-900 focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-all shadow-sm text-sm sm:text-base box-border">
+                            <div class="absolute left-4 top-3.5 sm:top-4 text-earth-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
                         </div>
-                    </td>
-                </tr>
-                <tr id="queryNoData" class="hidden">
-                    <td colspan="5" class="px-6 py-16 text-center text-earth-400 font-medium italic">
-                        目前暫無已登錄的報名資料。
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </div>
-</div> <!-- 結束 query-wrapper -->
+                    </div>
+
+                    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-tea-100 max-w-full">
+
+                        <!-- 🟢 1. 外層容器設定 overflow-x-auto，內部表格加上 table-fixed 與 min-w-[750px] -->
+<div class="overflow-x-auto w-full">
+    <table class="w-full text-left border-collapse min-w-[700px]">
+        <thead>
+            <tr class="bg-tea-100 text-tea-900 font-bold text-sm md:text-base border-b border-tea-200">
+                <th class="px-4 sm:px-6 py-4 text-center whitespace-nowrap">UID</th>
+                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">茶園名稱</th>
+                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">負責人</th>
+                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">推薦茶品名/自信作</th>
+                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">茶葉產區</th>
+            </tr>
+        </thead>
+        <tbody id="queryTableBody" class="text-sm sm:text-base">
+        </tbody>
+        <tr id="queryLoading" class="hidden">
+            <td colspan="5" class="px-6 py-16 text-center text-earth-500 font-medium">
+                <div class="flex flex-col items-center justify-center space-y-3">
+                    <svg class="animate-spin h-8 w-8 text-tea-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>讀取最新報名清單中，請稍候...</span>
+                </div>
+            </td>
+        </tr>
+        <tr id="queryNoData" class="hidden">
+            <td colspan="5" class="px-6 py-16 text-center text-earth-400 font-medium italic">
+                目前暫無已登錄的報名資料。
+            </td>
+        </tr>
+    </table>
+</div>
+                    </div>
+                </div> <!-- 結束 query-wrapper -->
 
             </div>
         </section>
