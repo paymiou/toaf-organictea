@@ -680,25 +680,20 @@
 
                     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-tea-100 max-w-full">
 
-<!-- 🟢 1. 外層容器：加上 max-h-[500px] 與 overflow-y-auto 允許垂直滾動 -->
-<div class="overflow-x-auto overflow-y-auto max-h-[500px] w-full relative">
+                        <!-- 🟢 1. 外層容器設定 overflow-x-auto，內部表格加上 table-fixed 與 min-w-[750px] -->
+<div class="overflow-x-auto w-full">
     <table class="w-full text-left border-collapse min-w-[700px]">
-        <!-- 🟢 2. 標題列：加上 sticky top-0 z-10 與背景色 bg-tea-100，防止資料列穿透 -->
-        <thead class="sticky top-0 z-10 bg-tea-100 shadow-sm">
-            <tr class="text-tea-900 font-bold text-sm md:text-base border-b border-tea-200">
-                <th class="px-4 sm:px-6 py-4 text-center whitespace-nowrap bg-tea-100">UID</th>
-                <th class="px-4 sm:px-6 py-4 w-48 min-w-[190px] max-w-[190px] whitespace-normal break-words bg-tea-100">茶園名稱</th>
-                <th class="px-4 sm:px-6 py-4 whitespace-nowrap bg-tea-100">負責人</th>
-                <th class="px-4 sm:px-6 py-4 whitespace-nowrap bg-tea-100">推薦茶品名/自信作</th>
-                <th class="px-4 sm:px-6 py-4 whitespace-nowrap bg-tea-100">茶葉產區</th>
+        <thead>
+            <tr class="bg-tea-100 text-tea-900 font-bold text-sm md:text-base border-b border-tea-200">
+                <th class="px-4 sm:px-6 py-4 text-center whitespace-nowrap">UID</th>
+                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">茶園名稱</th>
+                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">負責人</th>
+                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">推薦茶品名/自信作</th>
+                <th class="px-4 sm:px-6 py-4 whitespace-nowrap">茶葉產區</th>
             </tr>
         </thead>
         <tbody id="queryTableBody" class="text-sm sm:text-base">
         </tbody>
-        <!-- 載入中與無資料提示區塊... -->
-    </table>
-</div>
-
         <tr id="queryLoading" class="hidden">
             <td colspan="5" class="px-6 py-16 text-center text-earth-500 font-medium">
                 <div class="flex flex-col items-center justify-center space-y-3">
@@ -1007,49 +1002,41 @@
             }
         }
 
-async function fetchQueryData() {
-    const tableBody = document.getElementById('queryTableBody');
-    const loadingRow = document.getElementById('queryLoading');
-    const noDataRow = document.getElementById('queryNoData');
-    
-    // 1. 優先檢查快取 (設定快取有效時間如 3 分鐘)
-    const cachedData = sessionStorage.getItem('queryDataCache');
-    const cacheTime = sessionStorage.getItem('queryDataCacheTime');
-    const isCacheValid = cacheTime && (Date.now() - cacheTime < 3 * 60 * 1000); // 3 分鐘
-
-    if (cachedData && isCacheValid) {
-        window.cachedQueryData = JSON.parse(cachedData);
-        renderQueryTable(window.cachedQueryData);
-        return;
-    }
-
-    // 2. 快取失效或無快取時才向 GAS 請求
-    tableBody.innerHTML = '';
-    loadingRow.classList.remove('hidden');
-    noDataRow.classList.add('hidden');
-    
-    try {
-        const res = await fetch(SCRIPT_URL);
-        const json = await res.json();
-        loadingRow.classList.add('hidden');
-        
-        if (json.result === 'success' && json.data) {
-            window.cachedQueryData = json.data;
-            // 寫入 sessionStorage
-            sessionStorage.setItem('queryDataCache', JSON.stringify(json.data));
-            sessionStorage.setItem('queryDataCacheTime', Date.now());
+        async function fetchQueryData() {
+            const tableBody = document.getElementById('queryTableBody');
+            const loadingRow = document.getElementById('queryLoading');
+            const noDataRow = document.getElementById('queryNoData');
             
-            renderQueryTable(json.data);
+            tableBody.innerHTML = '';
+            loadingRow.classList.remove('hidden');
+            noDataRow.classList.add('hidden');
+            
+            try {
+                const res = await fetch(SCRIPT_URL);
+                const json = await res.json();
+                
+                loadingRow.classList.add('hidden');
+                
+                if (json.result === 'success' && json.data) {
+                    window.cachedQueryData = json.data; 
+                    if (json.data.length > 0) {
+                        renderQueryTable(json.data);
+                    } else {
+                        noDataRow.classList.remove('hidden');
+                    }
+                } else {
+                    noDataRow.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                loadingRow.classList.add('hidden');
+                noDataRow.classList.remove('hidden');
+                noDataRow.querySelector('td').innerHTML = `<span class="text-red-500 font-bold">載入失敗</span>，請確認後端 GAS 已部署為新版本並開放「所有人(Anyone)」存取。`;
+            }
         }
-    } catch (error) {
-        // 錯誤處理...
-    }
-}
 
 // 🟢 每個 <td> 皆加上 whitespace-nowrap，過長時會向右延伸並出現滑軌，不再擠壓負責人欄位
 
-let currentPage = 1;
-const pageSize = 20;
 
 function renderQueryTable(data) {
     const tableBody = document.getElementById('queryTableBody');
@@ -1060,18 +1047,13 @@ function renderQueryTable(data) {
         tr.className = 'border-b border-earth-100 hover:bg-tea-50/50 transition-colors';
         tr.innerHTML = `
             <td class="px-4 sm:px-6 py-4 text-center font-bold text-tea-700 whitespace-nowrap">${item.uid}</td>
-            <!-- 🟢 茶園名稱：固定寬度 190px、過長時自動斷字換行 -->
-            <td class="px-4 sm:px-6 py-4 font-bold text-earth-900 w-48 min-w-[190px] max-w-[190px] whitespace-normal break-words">${item.gardenName}</td>
+            <td class="px-4 sm:px-6 py-4 font-bold text-earth-900 whitespace-nowrap">${item.gardenName}</td>
             <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.ownerName}</td>
             <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.teaName}</td>
             <td class="px-4 sm:px-6 py-4 text-earth-600 text-xs sm:text-sm whitespace-nowrap">${item.productionArea}</td>
         `;
         tableBody.appendChild(tr);
     });
-}
-
-    // 若還有剩餘資料，顯示「載入更多」按鈕或觸發滾動監聽
-    toggleLoadMoreButton(end < data.length);
 }
 
         function filterQueryData(keyword) {
