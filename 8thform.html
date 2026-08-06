@@ -1041,35 +1041,30 @@ async function fetchQueryData() {
     }
 }
 
-// 🟢 每個 <td> 皆加上 whitespace-nowrap，過長時會向右延伸並出現滑軌，不再擠壓負責人欄位
-
-let currentPage = 1;
-const pageSize = 20;
-
-function renderQueryTable(data, isAppend = false) {
+function renderQueryTable(data) {
     const tableBody = document.getElementById('queryTableBody');
-    if (!isAppend) tableBody.innerHTML = '';
+    tableBody.innerHTML = '';
     
-    // 計算當前頁數要截取的資料範圍
-    const start = (currentPage - 1) * pageSize;
-    const end = start + pageSize;
-    const pageData = data.slice(start, end);
-    
-    pageData.forEach(item => {
+    const noDataRow = document.getElementById('queryNoData');
+    if (!data || data.length === 0) {
+        if (noDataRow) noDataRow.classList.remove('hidden');
+        return;
+    } else {
+        if (noDataRow) noDataRow.classList.add('hidden');
+    }
+
+    data.forEach(item => {
         const tr = document.createElement('tr');
         tr.className = 'border-b border-earth-100 hover:bg-tea-50/50 transition-colors';
         tr.innerHTML = `
-            <td class="px-4 sm:px-6 py-4 text-center font-bold text-tea-700 whitespace-nowrap">${item.uid}</td>
-            <td class="px-4 sm:px-6 py-4 font-bold text-earth-900 whitespace-nowrap">${item.gardenName}</td>
-            <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.ownerName}</td>
-            <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.teaName}</td>
-            <td class="px-4 sm:px-6 py-4 text-earth-600 text-xs sm:text-sm whitespace-nowrap">${item.productionArea}</td>
+            <td class="px-4 sm:px-6 py-4 text-center font-bold text-tea-700 whitespace-nowrap">${item.uid || ''}</td>
+            <td class="px-4 sm:px-6 py-4 font-bold text-earth-900 whitespace-nowrap">${item.gardenName || ''}</td>
+            <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.ownerName || ''}</td>
+            <td class="px-4 sm:px-6 py-4 text-earth-800 whitespace-nowrap">${item.teaName || ''}</td>
+            <td class="px-4 sm:px-6 py-4 text-earth-600 text-xs sm:text-sm whitespace-nowrap">${item.productionArea || ''}</td>
         `;
         tableBody.appendChild(tr);
     });
-
-    // 若還有剩餘資料，顯示「載入更多」按鈕或觸發滾動監聽
-    toggleLoadMoreButton(end < data.length);
 }
 
         function filterQueryData(keyword) {
