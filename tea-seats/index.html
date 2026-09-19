@@ -11,20 +11,29 @@
     
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f4f5f1; }
-        .table-container { overflow-x: auto; }
+        
+        /* 表格容器設定 */
+        .table-container { 
+            overflow-x: auto; 
+            /* 設定最大高度以啟動內部捲動，配合 sticky 使用效果最佳 */
+            max-height: 80vh; 
+            border: 1px solid #d1d5db; 
+            border-radius: 8px;
+        }
+        
         table { width: 100%; min-width: 750px; border-collapse: collapse; table-layout: fixed; }
         
         /* 統一設定表格格線與內距 */
-        td { border: 1px solid #d1d5db; padding: 10px 6px; text-align: center; word-wrap: break-word; }
+        td { border: 1px solid #d1d5db; padding: 10px 4px; text-align: center; word-wrap: break-word; }
         
-        /* 欄位精準寬度控制 */
-        .data-row td:nth-child(1), .sub-header td:nth-child(1) { width: 52px; white-space: nowrap; } /* 席次：緊湊縮小 */
-        .data-row td:nth-child(2), .sub-header td:nth-child(2) { width: 52px; white-space: nowrap; } /* 編號：緊湊縮小 */
-        .data-row td:nth-child(3), .sub-header td:nth-child(3) { width: 35%; } /* 茶園名稱：大幅加寬 */
-        .data-row td:nth-child(4), .sub-header td:nth-child(4) { width: 85px; white-space: nowrap; } /* 茶師 */
-        .data-row td:nth-child(5), .sub-header td:nth-child(5) { width: auto; } /* 自信作 */
+        /* 1. 精準控制各欄寬度 */
+        .data-row td:nth-child(1), .sub-header td:nth-child(1) { width: 35px; white-space: nowrap; } /* 席次 */
+        .data-row td:nth-child(2), .sub-header td:nth-child(2) { width: 35px; white-space: nowrap; } /* 編號 */
+        .data-row td:nth-child(3), .sub-header td:nth-child(3) { width: 45%; } /* 茶園名稱 */
+        .data-row td:nth-child(4), .sub-header td:nth-child(4) { width: 65px; white-space: nowrap; } /* 茶師 */
+        .data-row td:nth-child(5), .sub-header td:nth-child(5) { width: 45%; } /* 自信作 (與茶園名稱平分) */
 
-        /* 跨欄大標題樣式 */
+        /* 3. 跨欄大標題樣式 & 吸附設定 (Sticky) */
         .section-header td {
             background-color: #065f46;
             color: white;
@@ -32,13 +41,23 @@
             font-size: 1.2rem;
             letter-spacing: 1px;
             padding: 12px;
+            /* 吸附在頂部 */
+            position: sticky;
+            top: 0;
+            z-index: 20; /* 確保綠色標題在最上層 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 捲動時加上陰影更好看 */
         }
 
-        /* 欄位名稱列樣式 */
+        /* 3. 欄位名稱列樣式 & 吸附設定 (Sticky) */
         .sub-header td {
             background-color: #e5e7eb;
             color: #374151;
             font-weight: bold;
+            /* 吸附在綠色大標題的正下方 (假設綠色標題高度約 53px) */
+            position: sticky;
+            top: 53px; 
+            z-index: 10;
+            border-bottom: 2px solid #9ca3af;
         }
 
         /* 資料列 hover 效果 */
@@ -47,7 +66,7 @@
 </head>
 <body class="p-4 md:p-6">
 
-    <div class="max-w-5xl mx-auto bg-white p-4 md:p-6 rounded-lg shadow-lg">
+    <div class="max-w-6xl mx-auto bg-white p-4 md:p-6 rounded-lg shadow-lg">
         <h1 class="text-2xl md:text-3xl font-bold text-center text-emerald-800 mb-6">2026 有機’島茶 茶席區 每日席位表</h1>
         
         <!-- 篩選與搜尋列 -->
@@ -56,7 +75,8 @@
             <div class="flex items-center w-full md:w-auto">
                 <label for="date-filter" class="font-bold text-gray-700 mr-2 whitespace-nowrap">📅 選擇日期：</label>
                 <select id="date-filter" class="w-full md:w-auto border-2 border-emerald-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 cursor-pointer shadow-sm transition" onchange="applyFilters()">
-                    <option value="all">顯示全部場次 (10/03 ~ 10/11)</option>
+                    <!-- 2. 將文字精簡為 "全部場次" -->
+                    <option value="all">全部場次</option>
                 </select>
             </div>
 
@@ -75,6 +95,7 @@
             <!-- 搜尋無結果時顯示 -->
         </div>
 
+        <!-- 增加 max-height 與 overflow 的容器來實現完美的 Sticky Header -->
         <div id="table-wrapper" class="table-container hidden">
             <table id="schedule-table">
                 <tbody id="table-body"></tbody>
@@ -107,20 +128,16 @@
                 let row = rawData[i];
                 let col0 = (row[0] || '').trim();
 
-                // 忽略完全空白列與總標題
                 if (row.slice(0, 5).every(cell => !cell || cell.trim() === '')) continue;
                 if (col0.includes("每日席位表")) continue;
 
-                // 1. 偵測日期列 (例如 "10/03(六)" 或帶有空格的 "10/04 (日) 十茶席位表")
                 let dateMatch = col0.match(/(\d{1,2}\/\d{1,2})\s*\(([一二三四五六日])\)/);
                 if (dateMatch) {
-                    // 統一格式為 "10/04(日)" (去除中間的空白)
                     currentDate = `${dateMatch[1]}(${dateMatch[2]})`;
                     uniqueDates.add(currentDate);
-                    continue; // 濾掉該列，不將舊的雜項標題印在表格內
+                    continue; 
                 }
 
-                // 2. 偵測時段 (上午 / 下午) 並自動判斷平日與假日的結束時間
                 if (col0.includes("上午")) {
                     let sectionTitle = `${currentDate} 上午 09:00-13:00`;
                     currentSection = {
@@ -132,7 +149,6 @@
                     allSections.push(currentSection);
                 }
                 else if (col0.includes("下午")) {
-                    // 判斷平日 (10/05一 ~ 10/08四) 下午為 13:30-16:30，其餘為 13:30-17:30
                     let isWeekday = currentDate.includes("10/05") || currentDate.includes("10/06") || currentDate.includes("10/07") || currentDate.includes("10/08");
                     let timeStr = isWeekday ? "下午 13:30-16:30" : "下午 13:30-17:30";
                     
@@ -145,7 +161,6 @@
                     };
                     allSections.push(currentSection);
                 }
-                // 3. 標題列 ("席次")
                 else if (col0 === "席次") {
                     if (currentSection) {
                         let hRow = [...row].slice(0, 5);
@@ -153,7 +168,6 @@
                         currentSection.headers = hRow;
                     }
                 }
-                // 4. 一般茶席資料列
                 else {
                     if (currentSection) {
                         currentSection.rows.push(row.slice(0, 5));
@@ -163,11 +177,14 @@
 
             buildFilterOptions();
             applyFilters();
+            
+            // 延遲執行：為了計算精確的綠色標題高度，以設定灰色子標題的 top 位置
+            setTimeout(adjustStickyHeader, 100);
         }
 
         function buildFilterOptions() {
             const select = document.getElementById('date-filter');
-            select.innerHTML = '<option value="all">顯示全部場次 (10/03 ~ 10/11)</option>';
+            select.innerHTML = '<option value="all">全部場次</option>';
             
             uniqueDates.forEach(date => {
                 let option = document.createElement('option');
@@ -178,7 +195,6 @@
             document.getElementById('filter-container').classList.remove('hidden');
         }
 
-        // 核心篩選邏輯：同時比對日期與編號
         window.applyFilters = function() {
             const selectedDate = document.getElementById('date-filter').value;
             const searchTerm = document.getElementById('id-search').value.trim().toLowerCase();
@@ -189,10 +205,8 @@
             let totalMatches = 0;
 
             for (let sec of allSections) {
-                // 日期過濾
                 if (selectedDate !== 'all' && sec.date !== selectedDate) continue;
 
-                // 編號過濾
                 let matchedRows = sec.rows.filter(row => {
                     if (!searchTerm) return true;
                     let idVal = String(row[1] || '').trim().toLowerCase();
@@ -202,22 +216,21 @@
                 if (matchedRows.length > 0) {
                     totalMatches += matchedRows.length;
 
-                    // 跨欄綠底大標題
+                    // 綠色大標題
                     html += `<tr class="section-header"><td colspan="5">${sec.title}</td></tr>`;
                     
-                    // 欄位標題
+                    // 灰色欄位標題
                     html += `<tr class="sub-header">`;
                     for (let h of sec.headers) {
                         html += `<td>${h || ''}</td>`;
                     }
                     html += `</tr>`;
                     
-                    // 茶席資料列
+                    // 資料列
                     for (let r of matchedRows) {
                         html += `<tr class="data-row">`;
                         for (let i = 0; i < 5; i++) {
                             let cellVal = r[i] || '';
-                            // 若有搜尋編號，符合者以黃底高亮顯示
                             if (i === 1 && searchTerm) {
                                 html += `<td class="font-bold text-emerald-900 bg-amber-200">${cellVal}</td>`;
                             } else {
@@ -229,7 +242,6 @@
                 }
             }
 
-            // 無結果提示
             if (totalMatches === 0) {
                 tbody.innerHTML = '';
                 document.getElementById('table-wrapper').classList.add('hidden');
@@ -239,10 +251,28 @@
                 tbody.innerHTML = html;
                 noResult.classList.add('hidden');
                 document.getElementById('table-wrapper').classList.remove('hidden');
+                
+                // 每次重新繪製表格後，重新計算 sticky 高度
+                setTimeout(adjustStickyHeader, 100);
             }
 
             document.getElementById('loading').classList.add('hidden');
         }
+
+        // 動態計算綠色標題的高度，讓灰色欄位標題精準吸附在它下方
+        function adjustStickyHeader() {
+            const firstHeader = document.querySelector('.section-header td');
+            if (firstHeader) {
+                const headerHeight = firstHeader.offsetHeight;
+                const subHeaders = document.querySelectorAll('.sub-header td');
+                subHeaders.forEach(td => {
+                    td.style.top = `${headerHeight - 1}px`; // 減 1px 避免產生小縫隙
+                });
+            }
+        }
+        
+        // 視窗縮放時也要重新計算高度
+        window.addEventListener('resize', adjustStickyHeader);
     </script>
 </body>
 </html>
