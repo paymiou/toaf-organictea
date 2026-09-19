@@ -17,7 +17,6 @@
             max-height: 80vh; 
             border: 1px solid #d1d5db; 
             border-radius: 8px;
-            /* 手機版不設定 overflow，由卡片自然往下長 */
         }
         
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -30,12 +29,12 @@
             .table-container { overflow-y: auto; }
             table { min-width: 750px; }
 
-            /* 1. 強制鎖死前兩欄與第四欄寬度，其餘讓瀏覽器自動填滿 (auto) */
-            .data-row td:nth-child(1), .sub-header td:nth-child(1) { width: 45px; max-width: 45px; white-space: nowrap; } /* 席次 */
-            .data-row td:nth-child(2), .sub-header td:nth-child(2) { width: 55px; max-width: 55px; white-space: nowrap; } /* 編號 */
-            .data-row td:nth-child(3), .sub-header td:nth-child(3) { width: auto; } /* 茶園名稱 */
-            .data-row td:nth-child(4), .sub-header td:nth-child(4) { width: 80px; max-width: 80px; white-space: nowrap; } /* 茶師 */
-            .data-row td:nth-child(5), .sub-header td:nth-child(5) { width: auto; } /* 自信作 */
+            /* 強制鎖死前兩欄與第四欄寬度，其餘讓瀏覽器自動填滿 (auto) */
+            .data-row td:nth-child(1), .sub-header td:nth-child(1) { width: 45px; max-width: 45px; white-space: nowrap; }
+            .data-row td:nth-child(2), .sub-header td:nth-child(2) { width: 55px; max-width: 55px; white-space: nowrap; }
+            .data-row td:nth-child(3), .sub-header td:nth-child(3) { width: auto; }
+            .data-row td:nth-child(4), .sub-header td:nth-child(4) { width: 80px; max-width: 80px; white-space: nowrap; }
+            .data-row td:nth-child(5), .sub-header td:nth-child(5) { width: auto; }
 
             .section-header td {
                 position: sticky;
@@ -56,12 +55,10 @@
         /* --- 手機版樣式 (卡片式排版，螢幕 < 768px) --- */
         @media (max-width: 767px) {
             .table-container { border: none; overflow: visible; max-height: none; }
-            table, thead, tbody, th, td, tr { display: block; } /* 把表格強制變為區塊元素 */
+            table, thead, tbody, th, td, tr { display: block; }
             
-            /* 隱藏灰色的欄位標題 (因為手機版每張卡片自己會寫標題) */
             .sub-header { display: none; }
 
-            /* 綠色時段大標題樣式調整 */
             .section-header td {
                 background-color: #065f46;
                 color: white;
@@ -72,24 +69,20 @@
                 margin-top: 16px;
                 text-align: center;
                 border: none;
-                /* 手機版可以考慮是否要 sticky，這裡先拔除避免卡版面 */
             }
 
-            /* 將每一列資料變成卡片 */
             .data-row {
                 background-color: white;
                 border: 1px solid #d1d5db;
                 border-top: none;
                 padding: 12px;
-                margin-bottom: 0; /* 緊貼上一張 */
+                margin-bottom: 0;
             }
-            /* 區隔每個時段的最後一張卡片與下一個時段 */
             .data-row:last-of-type { border-radius: 0 0 8px 8px; margin-bottom: 24px; border-bottom: 1px solid #d1d5db; }
 
-            /* 卡片內的每一行資料 */
             .data-row td {
                 display: flex;
-                justify-content: space-between; /* 標題靠左，內容靠右 */
+                justify-content: space-between;
                 align-items: center;
                 padding: 8px 4px;
                 border: none;
@@ -98,18 +91,16 @@
             }
             .data-row td:last-child { border-bottom: none; }
 
-            /* 在內容前面自動加上標題文字 (透過 CSS 的 content) */
             .data-row td:nth-child(1)::before { content: "席次："; font-weight: bold; color: #4b5563; }
             .data-row td:nth-child(2)::before { content: "編號："; font-weight: bold; color: #4b5563; }
             .data-row td:nth-child(3)::before { content: "茶園名稱："; font-weight: bold; color: #4b5563; }
             .data-row td:nth-child(4)::before { content: "茶師："; font-weight: bold; color: #4b5563; }
             .data-row td:nth-child(5)::before { content: "自信作："; font-weight: bold; color: #4b5563; }
             
-            /* 若搜尋中獎，手機版依然亮黃底 */
             .data-row td.highlight { background-color: #fef08a !important; color: #064e3b; font-weight: bold; border-radius: 4px; padding: 4px 8px; }
         }
 
-        /* 跨欄大標題基本樣式 (電腦與手機共用部分) */
+        /* 跨欄大標題基本樣式 */
         .section-header td {
             background-color: #065f46;
             color: white;
@@ -129,14 +120,11 @@
 <body class="p-4 md:p-6">
 
     <div class="max-w-6xl mx-auto bg-white p-4 md:p-6 rounded-lg shadow-lg">
-        <!-- 3. 手機版標題換行：使用 <br class="block md:hidden"> -->
         <h1 class="text-2xl md:text-3xl font-bold text-center text-emerald-800 mb-6 leading-relaxed">
             2026 有機’島茶 茶席區 <br class="block md:hidden"> 每日席位表
         </h1>
         
-        <!-- 篩選與搜尋列 -->
         <div id="filter-container" class="mb-6 flex flex-col md:flex-row justify-center items-center gap-4 hidden">
-            <!-- 日期下拉選單 -->
             <div class="flex items-center w-full md:w-auto">
                 <label for="date-filter" class="font-bold text-gray-700 mr-2 whitespace-nowrap">📅 選擇日期：</label>
                 <select id="date-filter" class="w-full md:w-auto border-2 border-emerald-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 cursor-pointer shadow-sm transition" onchange="applyFilters()">
@@ -144,7 +132,6 @@
                 </select>
             </div>
 
-            <!-- 編號搜尋框 -->
             <div class="flex items-center w-full md:w-auto">
                 <label for="id-search" class="font-bold text-gray-700 mr-2 whitespace-nowrap">🔍 搜尋編號：</label>
                 <input type="text" id="id-search" placeholder="輸入編號 (如: 36)" class="w-full md:w-40 border-2 border-emerald-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 shadow-sm transition" oninput="applyFilters()">
@@ -156,7 +143,6 @@
         </div>
 
         <div id="no-result" class="text-center text-amber-800 bg-amber-50 border border-amber-200 p-6 rounded-lg hidden text-lg font-medium my-4">
-            <!-- 搜尋無結果時顯示 -->
         </div>
 
         <div id="table-wrapper" class="table-container hidden">
@@ -176,7 +162,15 @@
             download: true,
             header: false,
             complete: function(results) {
-                processData(results.data);
+                if (results && results.data && results.data.length > 0) {
+                    processData(results.data);
+                } else {
+                    document.getElementById('loading').innerText = '載入資料失敗，請檢查試算表網址或權限。';
+                }
+            },
+            error: function(err) {
+                console.error("PapaParse Error:", err);
+                document.getElementById('loading').innerText = '發生網路錯誤，請稍後再試。';
             }
         });
 
@@ -290,7 +284,6 @@
                         html += `<tr class="data-row">`;
                         for (let i = 0; i < 5; i++) {
                             let cellVal = r[i] || '';
-                            // 加上 highlight class 給手機版 CSS 使用
                             if (i === 1 && searchTerm) {
                                 html += `<td class="highlight font-bold text-emerald-900 bg-amber-200">${cellVal}</td>`;
                             } else {
@@ -319,7 +312,6 @@
         }
 
         function adjustStickyHeader() {
-            // 只有在螢幕寬度大於 767px (電腦版) 時才計算 Sticky 高度
             if (window.innerWidth > 767) {
                 const firstHeader = document.querySelector('.section-header td');
                 if (firstHeader) {
