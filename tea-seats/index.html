@@ -12,28 +12,104 @@
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f4f5f1; }
         
-        /* 表格容器設定 */
+        /* 電腦版表格容器設定 */
         .table-container { 
-            overflow-x: auto; 
-            /* 設定最大高度以啟動內部捲動，配合 sticky 使用效果最佳 */
             max-height: 80vh; 
             border: 1px solid #d1d5db; 
             border-radius: 8px;
+            /* 手機版不設定 overflow，由卡片自然往下長 */
         }
         
-        table { width: 100%; min-width: 750px; border-collapse: collapse; table-layout: fixed; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         
-        /* 統一設定表格格線與內距 */
+        /* 基本 td 設定 */
         td { border: 1px solid #d1d5db; padding: 10px 4px; text-align: center; word-wrap: break-word; }
         
-        /* 1. 精準控制各欄寬度 */
-        .data-row td:nth-child(1), .sub-header td:nth-child(1) { width: 35px; white-space: nowrap; } /* 席次 */
-        .data-row td:nth-child(2), .sub-header td:nth-child(2) { width: 35px; white-space: nowrap; } /* 編號 */
-        .data-row td:nth-child(3), .sub-header td:nth-child(3) { width: 45%; } /* 茶園名稱 */
-        .data-row td:nth-child(4), .sub-header td:nth-child(4) { width: 65px; white-space: nowrap; } /* 茶師 */
-        .data-row td:nth-child(5), .sub-header td:nth-child(5) { width: 45%; } /* 自信作 (與茶園名稱平分) */
+        /* --- 電腦版樣式 (螢幕 > 768px) --- */
+        @media (min-width: 768px) {
+            .table-container { overflow-y: auto; }
+            table { min-width: 750px; }
 
-        /* 3. 跨欄大標題樣式 & 吸附設定 (Sticky) */
+            /* 1. 強制鎖死前兩欄與第四欄寬度，其餘讓瀏覽器自動填滿 (auto) */
+            .data-row td:nth-child(1), .sub-header td:nth-child(1) { width: 45px; max-width: 45px; white-space: nowrap; } /* 席次 */
+            .data-row td:nth-child(2), .sub-header td:nth-child(2) { width: 55px; max-width: 55px; white-space: nowrap; } /* 編號 */
+            .data-row td:nth-child(3), .sub-header td:nth-child(3) { width: auto; } /* 茶園名稱 */
+            .data-row td:nth-child(4), .sub-header td:nth-child(4) { width: 80px; max-width: 80px; white-space: nowrap; } /* 茶師 */
+            .data-row td:nth-child(5), .sub-header td:nth-child(5) { width: auto; } /* 自信作 */
+
+            .section-header td {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .sub-header td {
+                position: sticky;
+                top: 53px; 
+                z-index: 10;
+                border-bottom: 2px solid #9ca3af;
+            }
+            .data-row:hover { background-color: #f3f4f6; }
+        }
+
+        /* --- 手機版樣式 (卡片式排版，螢幕 < 768px) --- */
+        @media (max-width: 767px) {
+            .table-container { border: none; overflow: visible; max-height: none; }
+            table, thead, tbody, th, td, tr { display: block; } /* 把表格強制變為區塊元素 */
+            
+            /* 隱藏灰色的欄位標題 (因為手機版每張卡片自己會寫標題) */
+            .sub-header { display: none; }
+
+            /* 綠色時段大標題樣式調整 */
+            .section-header td {
+                background-color: #065f46;
+                color: white;
+                font-weight: bold;
+                font-size: 1.1rem;
+                padding: 12px;
+                border-radius: 8px 8px 0 0;
+                margin-top: 16px;
+                text-align: center;
+                border: none;
+                /* 手機版可以考慮是否要 sticky，這裡先拔除避免卡版面 */
+            }
+
+            /* 將每一列資料變成卡片 */
+            .data-row {
+                background-color: white;
+                border: 1px solid #d1d5db;
+                border-top: none;
+                padding: 12px;
+                margin-bottom: 0; /* 緊貼上一張 */
+            }
+            /* 區隔每個時段的最後一張卡片與下一個時段 */
+            .data-row:last-of-type { border-radius: 0 0 8px 8px; margin-bottom: 24px; border-bottom: 1px solid #d1d5db; }
+
+            /* 卡片內的每一行資料 */
+            .data-row td {
+                display: flex;
+                justify-content: space-between; /* 標題靠左，內容靠右 */
+                align-items: center;
+                padding: 8px 4px;
+                border: none;
+                border-bottom: 1px dashed #e5e7eb;
+                text-align: right;
+            }
+            .data-row td:last-child { border-bottom: none; }
+
+            /* 在內容前面自動加上標題文字 (透過 CSS 的 content) */
+            .data-row td:nth-child(1)::before { content: "席次："; font-weight: bold; color: #4b5563; }
+            .data-row td:nth-child(2)::before { content: "編號："; font-weight: bold; color: #4b5563; }
+            .data-row td:nth-child(3)::before { content: "茶園名稱："; font-weight: bold; color: #4b5563; }
+            .data-row td:nth-child(4)::before { content: "茶師："; font-weight: bold; color: #4b5563; }
+            .data-row td:nth-child(5)::before { content: "自信作："; font-weight: bold; color: #4b5563; }
+            
+            /* 若搜尋中獎，手機版依然亮黃底 */
+            .data-row td.highlight { background-color: #fef08a !important; color: #064e3b; font-weight: bold; border-radius: 4px; padding: 4px 8px; }
+        }
+
+        /* 跨欄大標題基本樣式 (電腦與手機共用部分) */
         .section-header td {
             background-color: #065f46;
             color: white;
@@ -41,33 +117,22 @@
             font-size: 1.2rem;
             letter-spacing: 1px;
             padding: 12px;
-            /* 吸附在頂部 */
-            position: sticky;
-            top: 0;
-            z-index: 20; /* 確保綠色標題在最上層 */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 捲動時加上陰影更好看 */
         }
 
-        /* 3. 欄位名稱列樣式 & 吸附設定 (Sticky) */
         .sub-header td {
             background-color: #e5e7eb;
             color: #374151;
             font-weight: bold;
-            /* 吸附在綠色大標題的正下方 (假設綠色標題高度約 53px) */
-            position: sticky;
-            top: 53px; 
-            z-index: 10;
-            border-bottom: 2px solid #9ca3af;
         }
-
-        /* 資料列 hover 效果 */
-        .data-row:hover { background-color: #f3f4f6; }
-    </style>
+    </script>
 </head>
 <body class="p-4 md:p-6">
 
     <div class="max-w-6xl mx-auto bg-white p-4 md:p-6 rounded-lg shadow-lg">
-        <h1 class="text-2xl md:text-3xl font-bold text-center text-emerald-800 mb-6">2026 有機’島茶 茶席區 每日席位表</h1>
+        <!-- 3. 手機版標題換行：使用 <br class="block md:hidden"> -->
+        <h1 class="text-2xl md:text-3xl font-bold text-center text-emerald-800 mb-6 leading-relaxed">
+            2026 有機’島茶 茶席區 <br class="block md:hidden"> 每日席位表
+        </h1>
         
         <!-- 篩選與搜尋列 -->
         <div id="filter-container" class="mb-6 flex flex-col md:flex-row justify-center items-center gap-4 hidden">
@@ -75,7 +140,6 @@
             <div class="flex items-center w-full md:w-auto">
                 <label for="date-filter" class="font-bold text-gray-700 mr-2 whitespace-nowrap">📅 選擇日期：</label>
                 <select id="date-filter" class="w-full md:w-auto border-2 border-emerald-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 cursor-pointer shadow-sm transition" onchange="applyFilters()">
-                    <!-- 2. 將文字精簡為 "全部場次" -->
                     <option value="all">全部場次</option>
                 </select>
             </div>
@@ -95,7 +159,6 @@
             <!-- 搜尋無結果時顯示 -->
         </div>
 
-        <!-- 增加 max-height 與 overflow 的容器來實現完美的 Sticky Header -->
         <div id="table-wrapper" class="table-container hidden">
             <table id="schedule-table">
                 <tbody id="table-body"></tbody>
@@ -178,7 +241,6 @@
             buildFilterOptions();
             applyFilters();
             
-            // 延遲執行：為了計算精確的綠色標題高度，以設定灰色子標題的 top 位置
             setTimeout(adjustStickyHeader, 100);
         }
 
@@ -216,23 +278,21 @@
                 if (matchedRows.length > 0) {
                     totalMatches += matchedRows.length;
 
-                    // 綠色大標題
                     html += `<tr class="section-header"><td colspan="5">${sec.title}</td></tr>`;
                     
-                    // 灰色欄位標題
                     html += `<tr class="sub-header">`;
                     for (let h of sec.headers) {
                         html += `<td>${h || ''}</td>`;
                     }
                     html += `</tr>`;
                     
-                    // 資料列
                     for (let r of matchedRows) {
                         html += `<tr class="data-row">`;
                         for (let i = 0; i < 5; i++) {
                             let cellVal = r[i] || '';
+                            // 加上 highlight class 給手機版 CSS 使用
                             if (i === 1 && searchTerm) {
-                                html += `<td class="font-bold text-emerald-900 bg-amber-200">${cellVal}</td>`;
+                                html += `<td class="highlight font-bold text-emerald-900 bg-amber-200">${cellVal}</td>`;
                             } else {
                                 html += `<td>${cellVal}</td>`;
                             }
@@ -252,26 +312,26 @@
                 noResult.classList.add('hidden');
                 document.getElementById('table-wrapper').classList.remove('hidden');
                 
-                // 每次重新繪製表格後，重新計算 sticky 高度
                 setTimeout(adjustStickyHeader, 100);
             }
 
             document.getElementById('loading').classList.add('hidden');
         }
 
-        // 動態計算綠色標題的高度，讓灰色欄位標題精準吸附在它下方
         function adjustStickyHeader() {
-            const firstHeader = document.querySelector('.section-header td');
-            if (firstHeader) {
-                const headerHeight = firstHeader.offsetHeight;
-                const subHeaders = document.querySelectorAll('.sub-header td');
-                subHeaders.forEach(td => {
-                    td.style.top = `${headerHeight - 1}px`; // 減 1px 避免產生小縫隙
-                });
+            // 只有在螢幕寬度大於 767px (電腦版) 時才計算 Sticky 高度
+            if (window.innerWidth > 767) {
+                const firstHeader = document.querySelector('.section-header td');
+                if (firstHeader) {
+                    const headerHeight = firstHeader.offsetHeight;
+                    const subHeaders = document.querySelectorAll('.sub-header td');
+                    subHeaders.forEach(td => {
+                        td.style.top = `${headerHeight - 1}px`; 
+                    });
+                }
             }
         }
         
-        // 視窗縮放時也要重新計算高度
         window.addEventListener('resize', adjustStickyHeader);
     </script>
 </body>
