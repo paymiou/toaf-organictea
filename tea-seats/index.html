@@ -15,13 +15,13 @@
         table { width: 100%; min-width: 750px; border-collapse: collapse; table-layout: fixed; }
         
         /* 統一設定表格格線與內距 */
-        td { border: 1px solid #d1d5db; padding: 12px; text-align: center; word-wrap: break-word; }
+        td { border: 1px solid #d1d5db; padding: 10px 6px; text-align: center; word-wrap: break-word; }
         
         /* 欄位精準寬度控制 */
-        .data-row td:nth-child(1), .sub-header td:nth-child(1) { width: 60px; } /* 席次：縮小符合數字 */
-        .data-row td:nth-child(2), .sub-header td:nth-child(2) { width: 80px; white-space: nowrap; } /* 編號：加寬且不換行 */
-        .data-row td:nth-child(3), .sub-header td:nth-child(3) { width: auto; } /* 茶園名稱 */
-        .data-row td:nth-child(4), .sub-header td:nth-child(4) { width: 100px; white-space: nowrap; } /* 茶師：放得下三個字且不換行 */
+        .data-row td:nth-child(1), .sub-header td:nth-child(1) { width: 52px; white-space: nowrap; } /* 席次：緊湊縮小 */
+        .data-row td:nth-child(2), .sub-header td:nth-child(2) { width: 52px; white-space: nowrap; } /* 編號：緊湊縮小 */
+        .data-row td:nth-child(3), .sub-header td:nth-child(3) { width: 35%; } /* 茶園名稱：大幅加寬 */
+        .data-row td:nth-child(4), .sub-header td:nth-child(4) { width: 85px; white-space: nowrap; } /* 茶師 */
         .data-row td:nth-child(5), .sub-header td:nth-child(5) { width: auto; } /* 自信作 */
 
         /* 跨欄大標題樣式 */
@@ -29,9 +29,9 @@
             background-color: #065f46;
             color: white;
             font-weight: bold;
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             letter-spacing: 1px;
-            padding: 14px;
+            padding: 12px;
         }
 
         /* 欄位名稱列樣式 */
@@ -56,7 +56,7 @@
             <div class="flex items-center w-full md:w-auto">
                 <label for="date-filter" class="font-bold text-gray-700 mr-2 whitespace-nowrap">📅 選擇日期：</label>
                 <select id="date-filter" class="w-full md:w-auto border-2 border-emerald-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 cursor-pointer shadow-sm transition" onchange="applyFilters()">
-                    <option value="all">顯示全部場次</option>
+                    <option value="all">顯示全部場次 (10/03 ~ 10/11)</option>
                 </select>
             </div>
 
@@ -107,30 +107,45 @@
                 let row = rawData[i];
                 let col0 = (row[0] || '').trim();
 
+                // 忽略完全空白列與總標題
                 if (row.slice(0, 5).every(cell => !cell || cell.trim() === '')) continue;
                 if (col0.includes("每日席位表")) continue;
 
-                // 偵測日期 (例如 "10/03(六)")
-                if (col0.match(/\d{1,2}\/\d{1,2}\([一二三四五六日]\)/)) {
-                    let dateMatch = col0.match(/\d{1,2}\/\d{1,2}\([一二三四五六日]\)/);
-                    if (dateMatch) {
-                        currentDate = dateMatch[0];
-                        uniqueDates.add(currentDate);
-                    }
-                    continue;
+                // 1. 偵測日期列 (例如 "10/03(六)" 或帶有空格的 "10/04 (日) 十茶席位表")
+                let dateMatch = col0.match(/(\d{1,2}\/\d{1,2})\s*\(([一二三四五六日])\)/);
+                if (dateMatch) {
+                    // 統一格式為 "10/04(日)" (去除中間的空白)
+                    currentDate = `${dateMatch[1]}(${dateMatch[2]})`;
+                    uniqueDates.add(currentDate);
+                    continue; // 濾掉該列，不將舊的雜項標題印在表格內
                 }
 
-                // 偵測時段 (上午 / 下午) 並建立新區塊
-                if (col0.includes("上午") || col0.includes("下午")) {
+                // 2. 偵測時段 (上午 / 下午) 並自動判斷平日與假日的結束時間
+                if (col0.includes("上午")) {
+                    let sectionTitle = `${currentDate} 上午 09:00-13:00`;
                     currentSection = {
                         date: currentDate,
-                        title: `${currentDate} ${col0}`,
+                        title: sectionTitle,
                         headers: ["席次", "編號", "茶園名稱", "茶師", "自信作"],
                         rows: []
                     };
                     allSections.push(currentSection);
                 }
-                // 標題列
+                else if (col0.includes("下午")) {
+                    // 判斷平日 (10/05一 ~ 10/08四) 下午為 13:30-16:30，其餘為 13:30-17:30
+                    let isWeekday = currentDate.includes("10/05") || currentDate.includes("10/06") || currentDate.includes("10/07") || currentDate.includes("10/08");
+                    let timeStr = isWeekday ? "下午 13:30-16:30" : "下午 13:30-17:30";
+                    
+                    let sectionTitle = `${currentDate} ${timeStr}`;
+                    currentSection = {
+                        date: currentDate,
+                        title: sectionTitle,
+                        headers: ["席次", "編號", "茶園名稱", "茶師", "自信作"],
+                        rows: []
+                    };
+                    allSections.push(currentSection);
+                }
+                // 3. 標題列 ("席次")
                 else if (col0 === "席次") {
                     if (currentSection) {
                         let hRow = [...row].slice(0, 5);
@@ -138,7 +153,7 @@
                         currentSection.headers = hRow;
                     }
                 }
-                // 一般茶席資料列
+                // 4. 一般茶席資料列
                 else {
                     if (currentSection) {
                         currentSection.rows.push(row.slice(0, 5));
@@ -152,6 +167,8 @@
 
         function buildFilterOptions() {
             const select = document.getElementById('date-filter');
+            select.innerHTML = '<option value="all">顯示全部場次 (10/03 ~ 10/11)</option>';
+            
             uniqueDates.forEach(date => {
                 let option = document.createElement('option');
                 option.value = date;
@@ -161,7 +178,7 @@
             document.getElementById('filter-container').classList.remove('hidden');
         }
 
-        // 核心邏輯：同時根據「日期」與「編號」進行篩選
+        // 核心篩選邏輯：同時比對日期與編號
         window.applyFilters = function() {
             const selectedDate = document.getElementById('date-filter').value;
             const searchTerm = document.getElementById('id-search').value.trim().toLowerCase();
@@ -172,10 +189,10 @@
             let totalMatches = 0;
 
             for (let sec of allSections) {
-                // 日期篩選
+                // 日期過濾
                 if (selectedDate !== 'all' && sec.date !== selectedDate) continue;
 
-                // 編號篩選
+                // 編號過濾
                 let matchedRows = sec.rows.filter(row => {
                     if (!searchTerm) return true;
                     let idVal = String(row[1] || '').trim().toLowerCase();
@@ -185,22 +202,22 @@
                 if (matchedRows.length > 0) {
                     totalMatches += matchedRows.length;
 
-                    // 1. 大標題列 (例如: 10/03(六) 上午 09:00-13:00)
+                    // 跨欄綠底大標題
                     html += `<tr class="section-header"><td colspan="5">${sec.title}</td></tr>`;
                     
-                    // 2. 欄位標題列
+                    // 欄位標題
                     html += `<tr class="sub-header">`;
                     for (let h of sec.headers) {
                         html += `<td>${h || ''}</td>`;
                     }
                     html += `</tr>`;
                     
-                    // 3. 資料列
+                    // 茶席資料列
                     for (let r of matchedRows) {
                         html += `<tr class="data-row">`;
                         for (let i = 0; i < 5; i++) {
                             let cellVal = r[i] || '';
-                            // 若有搜尋編號，將符合的編號黃底高亮顯示
+                            // 若有搜尋編號，符合者以黃底高亮顯示
                             if (i === 1 && searchTerm) {
                                 html += `<td class="font-bold text-emerald-900 bg-amber-200">${cellVal}</td>`;
                             } else {
@@ -212,7 +229,7 @@
                 }
             }
 
-            // 處理搜尋無結果的情況
+            // 無結果提示
             if (totalMatches === 0) {
                 tbody.innerHTML = '';
                 document.getElementById('table-wrapper').classList.add('hidden');
