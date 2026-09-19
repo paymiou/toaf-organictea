@@ -10,31 +10,88 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f4f5f1; }
+        body { 
+            font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif; 
+            background-color: #f4f5f1; 
+        }
         
         /* 電腦版表格容器設定 */
         .table-container { 
             max-height: 80vh; 
             border: 1px solid #d1d5db; 
             border-radius: 8px;
+            background-color: #ffffff;
         }
         
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: fixed; 
+        }
         
         /* 基本 td 設定 */
-        td { border: 1px solid #d1d5db; padding: 10px 4px; text-align: center; word-wrap: break-word; }
+        td { 
+            border: 1px solid #d1d5db; 
+            padding: 10px 4px; 
+            word-wrap: break-word; 
+        }
+
+        /* --- 連席色彩高亮設定 (通用) --- */
+        /* 1. 同日上下午同一席位 (粉紅色) */
+        .row-same-day {
+            background-color: #fdf2f8 !important; /* light pink */
+        }
+        .row-same-day:hover {
+            background-color: #fce7f3 !important;
+        }
+
+        /* 2. 下午到隔日上午同一席位 (藍色) */
+        .row-next-day {
+            background-color: #f0f9ff !important; /* light blue */
+        }
+        .row-next-day:hover {
+            background-color: #e0f2fe !important;
+        }
         
         /* --- 電腦版樣式 (螢幕 > 768px) --- */
         @media (min-width: 768px) {
             .table-container { overflow-y: auto; }
             table { min-width: 750px; }
 
-            /* 強制鎖死前兩欄與第四欄寬度，其餘讓瀏覽器自動填滿 (auto) */
-            .data-row td:nth-child(1), .sub-header td:nth-child(1) { width: 45px; max-width: 45px; white-space: nowrap; }
-            .data-row td:nth-child(2), .sub-header td:nth-child(2) { width: 55px; max-width: 55px; white-space: nowrap; }
-            .data-row td:nth-child(3), .sub-header td:nth-child(3) { width: auto; }
-            .data-row td:nth-child(4), .sub-header td:nth-child(4) { width: 80px; max-width: 80px; white-space: nowrap; }
-            .data-row td:nth-child(5), .sub-header td:nth-child(5) { width: auto; }
+            /* 席次與編號：維持標準字級、緊湊欄寬、置中 */
+            .data-row td:nth-child(1), .sub-header td:nth-child(1) { 
+                width: 48px;
+                max-width: 48px;
+                text-align: center;
+                white-space: nowrap; 
+                padding: 10px 2px;
+                font-size: 0.95rem;
+            }
+            .data-row td:nth-child(2), .sub-header td:nth-child(2) { 
+                width: 52px;
+                max-width: 52px;
+                text-align: center;
+                white-space: nowrap; 
+                padding: 10px 2px;
+                font-size: 0.95rem;
+            }
+            /* 茶園名稱：寬裕空間、置中 */
+            .data-row td:nth-child(3), .sub-header td:nth-child(3) { 
+                width: 42%; 
+                text-align: center;
+            }
+            /* 茶師：固定適中寬度、置中 */
+            .data-row td:nth-child(4), .sub-header td:nth-child(4) { 
+                width: 75px; 
+                max-width: 75px; 
+                text-align: center;
+                white-space: nowrap; 
+            }
+            /* 自信作：其餘空間填滿、置中 */
+            .data-row td:nth-child(5), .sub-header td:nth-child(5) { 
+                width: auto; 
+                text-align: center;
+            }
 
             .section-header td {
                 position: sticky;
@@ -52,52 +109,159 @@
             .data-row:hover { background-color: #f3f4f6; }
         }
 
-        /* --- 手機版樣式 (卡片式排版，螢幕 < 768px) --- */
+        /* --- 手機版樣式 (緊湊兩行卡片式排版，螢幕 < 768px) --- */
         @media (max-width: 767px) {
-            .table-container { border: none; overflow: visible; max-height: none; }
+            .table-container { border: none; overflow: visible; max-height: none; background: transparent; }
             table, thead, tbody, th, td, tr { display: block; }
             
             .sub-header { display: none; }
+
+            .section-header {
+                position: sticky;
+                top: 0;
+                z-index: 30;
+            }
 
             .section-header td {
                 background-color: #065f46;
                 color: white;
                 font-weight: bold;
-                font-size: 1.1rem;
-                padding: 12px;
+                font-size: 1.05rem;
+                padding: 10px 12px;
                 border-radius: 8px 8px 0 0;
                 margin-top: 16px;
                 text-align: center;
                 border: none;
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
             }
 
             .data-row {
-                background-color: white;
-                border: 1px solid #d1d5db;
+                background-color: #ffffff !important;
+                border: 1px solid #e5e7eb;
                 border-top: none;
-                padding: 12px;
+                padding: 10px 12px;
                 margin-bottom: 0;
             }
-            .data-row:last-of-type { border-radius: 0 0 8px 8px; margin-bottom: 24px; border-bottom: 1px solid #d1d5db; }
+            
+            /* 手機版卡片維持白底，取消邊框染色與底色染色 */
+            .data-row.row-same-day,
+            .data-row.row-next-day {
+                background-color: #ffffff !important;
+                border-left: 1px solid #e5e7eb !important;
+            }
+
+            .data-row:last-of-type { 
+                border-radius: 0 0 8px 8px; 
+                margin-bottom: 20px; 
+                border-bottom: 1px solid #d1d5db; 
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
 
             .data-row td {
+                border: none;
+                padding: 0;
+            }
+
+            /* 手機版兩行式結構 */
+            .mobile-card-row1 {
+                display: flex;
+                align-items: flex-start;
+                gap: 6px;
+                margin-bottom: 6px;
+                font-size: 0.95rem;
+            }
+
+            .mobile-card-row2 {
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
-                padding: 8px 4px;
-                border: none;
-                border-bottom: 1px dashed #e5e7eb;
-                text-align: right;
+                align-items: flex-start;
+                font-size: 0.85rem;
+                color: #4b5563;
+                border-top: 1px dashed #e5e7eb;
+                padding-top: 6px;
+                gap: 8px;
             }
-            .data-row td:last-child { border-bottom: none; }
 
-            .data-row td:nth-child(1)::before { content: "席次："; font-weight: bold; color: #4b5563; }
-            .data-row td:nth-child(2)::before { content: "編號："; font-weight: bold; color: #4b5563; }
-            .data-row td:nth-child(3)::before { content: "茶園名稱："; font-weight: bold; color: #4b5563; }
-            .data-row td:nth-child(4)::before { content: "茶師："; font-weight: bold; color: #4b5563; }
-            .data-row td:nth-child(5)::before { content: "自信作："; font-weight: bold; color: #4b5563; }
-            
-            .data-row td.highlight { background-color: #fef08a !important; color: #064e3b; font-weight: bold; border-radius: 4px; padding: 4px 8px; }
+            .seat-badge {
+                background-color: #065f46;
+                color: white;
+                font-size: 0.75rem;
+                font-weight: bold;
+                padding: 2px 6px;
+                border-radius: 4px;
+                white-space: nowrap;
+                flex-shrink: 0;
+                margin-top: 1px;
+            }
+
+            /* 席次標籤：同日整天連席（粉紅） */
+            .seat-badge.badge-same-day {
+                background-color: #db2777 !important; /* 顯眼雅緻的粉紅梅紅 */
+                color: white !important;
+            }
+
+            /* 席次標籤：下午連至隔日跨日（藍色） */
+            .seat-badge.badge-next-day {
+                background-color: #0284c7 !important; /* 清晰穩重的湛藍 */
+                color: white !important;
+            }
+
+            .id-badge {
+                background-color: #e5e7eb;
+                color: #374151;
+                font-size: 0.75rem;
+                font-weight: 600;
+                padding: 2px 6px;
+                border-radius: 4px;
+                white-space: nowrap;
+                flex-shrink: 0;
+                margin-top: 1px;
+            }
+
+            .mobile-tea-title {
+                font-weight: 700;
+                color: #111827;
+                flex: 1;
+                white-space: normal;
+                word-break: break-word;
+                line-height: 1.4;
+            }
+
+            .mobile-tea-garden {
+                color: #065f46;
+                font-weight: 600;
+                flex: 1;
+                white-space: normal;
+                word-break: break-word;
+                line-height: 1.4;
+                margin-right: 4px;
+                display: flex;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .mobile-tea-icon {
+                width: 15px;
+                height: 15px;
+                object-fit: contain;
+                display: inline-block;
+                vertical-align: middle;
+                flex-shrink: 0;
+                margin-top: 2px;
+            }
+
+            .mobile-master {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            .highlight-tag { 
+                background-color: #fef08a !important; 
+                color: #064e3b !important; 
+                font-weight: bold; 
+                border-radius: 3px; 
+                padding: 0 4px; 
+            }
         }
 
         /* 跨欄大標題基本樣式 */
@@ -105,9 +269,10 @@
             background-color: #065f46;
             color: white;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             letter-spacing: 1px;
             padding: 12px;
+            text-align: center;
         }
 
         .sub-header td {
@@ -115,64 +280,111 @@
             color: #374151;
             font-weight: bold;
         }
-    </script>
+    </style>
 </head>
-<body class="p-4 md:p-6">
+<body class="p-3 md:p-6">
 
-    <div class="max-w-6xl mx-auto bg-white p-4 md:p-6 rounded-lg shadow-lg">
-        <h1 class="text-2xl md:text-3xl font-bold text-center text-emerald-800 mb-6 leading-relaxed">
+    <div class="max-w-6xl mx-auto bg-white p-4 md:p-6 rounded-xl shadow-lg">
+        <!-- 頂部標題區 -->
+        <h1 class="text-2xl md:text-3xl font-bold text-center text-emerald-800 mb-4 md:mb-6 leading-relaxed">
             2026 有機’島茶 茶席區 <br class="block md:hidden"> 每日席位表
         </h1>
         
+        <!-- 篩選器與搜尋列 -->
         <div id="filter-container" class="mb-6 flex flex-col md:flex-row justify-center items-center gap-4 hidden">
             <div class="flex items-center w-full md:w-auto">
-                <label for="date-filter" class="font-bold text-gray-700 mr-2 whitespace-nowrap">📅 選擇日期：</label>
+                <label for="date-filter" class="font-bold text-gray-700 mr-2 whitespace-nowrap w-[115px] shrink-0 md:w-auto">📅 選擇日期：</label>
                 <select id="date-filter" class="w-full md:w-auto border-2 border-emerald-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 cursor-pointer shadow-sm transition" onchange="applyFilters()">
                     <option value="all">全部場次</option>
                 </select>
             </div>
 
-            <div class="flex items-center w-full md:w-auto">
-                <label for="id-search" class="font-bold text-gray-700 mr-2 whitespace-nowrap">🔍 搜尋編號：</label>
-                <input type="text" id="id-search" placeholder="輸入編號 (如: 36)" class="w-full md:w-40 border-2 border-emerald-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 shadow-sm transition" oninput="applyFilters()">
+            <div class="flex items-center w-full md:w-auto relative">
+                <label for="id-search" class="font-bold text-gray-700 mr-2 whitespace-nowrap w-[115px] shrink-0 md:w-auto">🔍 搜尋：</label>
+                <input type="text" id="id-search" placeholder="輸入編號、茶園、茶師或茶名" class="w-full md:w-64 border-2 border-emerald-600 rounded-lg p-2 pr-8 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 shadow-sm transition" oninput="applyFilters()">
+                <button type="button" id="clear-search" onclick="clearSearchInput()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden text-sm font-bold p-1" title="清除搜尋">✕</button>
             </div>
         </div>
 
+        <!-- 載入與提示訊息 -->
         <div id="loading" class="text-center text-gray-500 py-10 text-lg">
-            資料載入中，請稍候...
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-600 border-t-transparent mb-2"></div>
+            <div>席位資料載入中，請稍候...</div>
         </div>
 
         <div id="no-result" class="text-center text-amber-800 bg-amber-50 border border-amber-200 p-6 rounded-lg hidden text-lg font-medium my-4">
         </div>
 
+        <!-- 表格容器 -->
         <div id="table-wrapper" class="table-container hidden">
             <table id="schedule-table">
+                <!-- 固定欄寬分配 -->
+                <colgroup>
+                    <col style="width: 48px;">
+                    <col style="width: 52px;">
+                    <col style="width: 42%;">
+                    <col style="width: 75px;">
+                    <col style="width: auto;">
+                </colgroup>
                 <tbody id="table-body"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNFwBpZ_uwSAPgPaeKhfgZgwKnkCoSbV_ApgmgpQ8_KIqpm_iHKNrpiq-z71vUUWJBMEmvqRjsEfwb/pub?gid=1255472775&single=true&output=csv';
+        const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNFwBpZ_uwSAPgPaeKhfgZgwKnkCoSbV_ApgmgpQ8_KIqpm_iHKNrpiq-z71vUUWJBMEmvqRjsEfwb/pub?gid=1255472775&single=true&output=csv';
+        const fallbackProxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(originalCsvUrl);
         
         let allSections = [];
         let uniqueDates = new Set();
 
-        Papa.parse(csvUrl, {
-            download: true,
-            header: false,
-            complete: function(results) {
-                if (results && results.data && results.data.length > 0) {
-                    processData(results.data);
-                } else {
-                    document.getElementById('loading').innerText = '載入資料失敗，請檢查試算表網址或權限。';
+        function loadCsvData(url, isRetry = false) {
+            Papa.parse(url, {
+                download: true,
+                header: false,
+                skipEmptyLines: false,
+                complete: function(results) {
+                    if (results && results.data && results.data.length > 0) {
+                        processData(results.data);
+                    } else {
+                        handleLoadError(isRetry);
+                    }
+                },
+                error: function(err) {
+                    console.warn("連線錯誤，嘗試備援連線:", err);
+                    handleLoadError(isRetry);
                 }
-            },
-            error: function(err) {
-                console.error("PapaParse Error:", err);
-                document.getElementById('loading').innerText = '發生網路錯誤，請稍後再試。';
+            });
+        }
+
+        function handleLoadError(isRetry) {
+            if (!isRetry) {
+                console.log("使用備用代理重新讀取資料...");
+                loadCsvData(fallbackProxyUrl, true);
+            } else {
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-red-600 font-semibold mb-2">無法讀取試算表資料</div>
+                    <div class="text-sm text-gray-600 mb-3">可能是網路連線不穩或跨網域存取限制。</div>
+                    <button onclick="location.reload()" class="px-4 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 transition">重新整理頁面</button>
+                `;
             }
-        });
+        }
+
+        loadCsvData(originalCsvUrl);
+
+        function cleanString(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/\u00A0/g, ' ').trim();
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
         function processData(rawData) {
             allSections = [];
@@ -182,10 +394,10 @@
             let currentSection = null;
 
             for (let i = 0; i < rawData.length; i++) {
-                let row = rawData[i];
-                let col0 = (row[0] || '').trim();
+                let row = rawData[i].map(cleanString);
+                let col0 = row[0] || '';
 
-                if (row.slice(0, 5).every(cell => !cell || cell.trim() === '')) continue;
+                if (row.slice(0, 5).every(cell => !cell)) continue;
                 if (col0.includes("每日席位表")) continue;
 
                 let dateMatch = col0.match(/(\d{1,2}\/\d{1,2})\s*\(([一二三四五六日])\)/);
@@ -199,6 +411,7 @@
                     let sectionTitle = `${currentDate} 上午 09:00-13:00`;
                     currentSection = {
                         date: currentDate,
+                        timePeriod: 'morning', // morning | afternoon
                         title: sectionTitle,
                         headers: ["席次", "編號", "茶園名稱", "茶師", "自信作"],
                         rows: []
@@ -212,6 +425,7 @@
                     let sectionTitle = `${currentDate} ${timeStr}`;
                     currentSection = {
                         date: currentDate,
+                        timePeriod: 'afternoon',
                         title: sectionTitle,
                         headers: ["席次", "編號", "茶園名稱", "茶師", "自信作"],
                         rows: []
@@ -232,10 +446,80 @@
                 }
             }
 
+            // 計算席位連席狀態 (粉紅: 同日上下午同一席 / 藍色: 下午到隔日同一席)
+            calculateConsecutiveSeats();
+
             buildFilterOptions();
             applyFilters();
             
             setTimeout(adjustStickyHeader, 100);
+        }
+
+        /* 分析並標記連席資訊 */
+        function calculateConsecutiveSeats() {
+            // 建立依場次次序排列的席位對照表
+            for (let sIdx = 0; sIdx < allSections.length; sIdx++) {
+                let sec = allSections[sIdx];
+                sec.rowMetadata = [];
+
+                for (let rIdx = 0; rIdx < sec.rows.length; rIdx++) {
+                    let r = sec.rows[rIdx];
+                    let seatNum = (r[0] || '').trim();
+                    let farmName = (r[2] || '').trim();
+                    let farmerId = (r[1] || '').trim(); // 編號
+                    let masterName = (r[3] || '').trim(); // 茶師
+
+                    let matchType = null; // 'same-day' (粉紅) | 'next-day' (藍色) | null
+
+                    // 檢查連席的關鍵依據：席次相同，且 (茶園名稱相同 或 編號相同)
+                    function isSameFarm(rTarget) {
+                        if (!rTarget) return false;
+                        let tSeat = (rTarget[0] || '').trim();
+                        let tId = (rTarget[1] || '').trim();
+                        let tFarm = (rTarget[2] || '').trim();
+                        if (!seatNum || tSeat !== seatNum) return false;
+                        if (!farmName && !farmerId) return false;
+                        return (farmName && tFarm === farmName) || (farmerId && tId === farmerId);
+                    }
+
+                    // 規則 1：同日上下午同一席位 (粉紅)
+                    // 若當前是上午，比對同一天下午的同席位
+                    if (sec.timePeriod === 'morning') {
+                        let afternoonSec = allSections.find(s => s.date === sec.date && s.timePeriod === 'afternoon');
+                        if (afternoonSec) {
+                            let matched = afternoonSec.rows.find(row => isSameFarm(row));
+                            if (matched) matchType = 'same-day';
+                        }
+                    } else if (sec.timePeriod === 'afternoon') {
+                        let morningSec = allSections.find(s => s.date === sec.date && s.timePeriod === 'morning');
+                        if (morningSec) {
+                            let matched = morningSec.rows.find(row => isSameFarm(row));
+                            if (matched) matchType = 'same-day';
+                        }
+                    }
+
+                    // 規則 2：下午到隔日同一席位 (藍色)
+                    // 若當前是下午，且沒有同日上下午粉紅標記時，比對相鄰下一場次（隔日上午）
+                    if (!matchType && sec.timePeriod === 'afternoon') {
+                        let nextSec = allSections[sIdx + 1];
+                        if (nextSec && nextSec.timePeriod === 'morning') {
+                            let matched = nextSec.rows.find(row => isSameFarm(row));
+                            if (matched) matchType = 'next-day';
+                        }
+                    } else if (!matchType && sec.timePeriod === 'morning') {
+                        // 若當前是上午，比對前一場次（前一日下午）
+                        let prevSec = allSections[sIdx - 1];
+                        if (prevSec && prevSec.timePeriod === 'afternoon') {
+                            let matched = prevSec.rows.find(row => isSameFarm(row));
+                            if (matched) matchType = 'next-day';
+                        }
+                    }
+
+                    sec.rowMetadata.push({
+                        matchType: matchType
+                    });
+                }
+            }
         }
 
         function buildFilterOptions() {
@@ -251,9 +535,25 @@
             document.getElementById('filter-container').classList.remove('hidden');
         }
 
+        function clearSearchInput() {
+            document.getElementById('id-search').value = '';
+            applyFilters();
+        }
+
         window.applyFilters = function() {
             const selectedDate = document.getElementById('date-filter').value;
-            const searchTerm = document.getElementById('id-search').value.trim().toLowerCase();
+            const searchInput = document.getElementById('id-search');
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const clearBtn = document.getElementById('clear-search');
+            
+            if (clearBtn) {
+                if (searchTerm) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+
             const tbody = document.getElementById('table-body');
             const noResult = document.getElementById('no-result');
             
@@ -263,33 +563,100 @@
             for (let sec of allSections) {
                 if (selectedDate !== 'all' && sec.date !== selectedDate) continue;
 
-                let matchedRows = sec.rows.filter(row => {
-                    if (!searchTerm) return true;
-                    let idVal = String(row[1] || '').trim().toLowerCase();
-                    return idVal.includes(searchTerm);
-                });
+                // 篩選匹配
+                let filteredIndices = [];
+                for (let idx = 0; idx < sec.rows.length; idx++) {
+                    let row = sec.rows[idx];
+                    if (!searchTerm) {
+                        filteredIndices.push(idx);
+                    } else {
+                        let isMatched = row.slice(0, 5).some(cell => String(cell || '').toLowerCase().includes(searchTerm));
+                        if (isMatched) filteredIndices.push(idx);
+                    }
+                }
 
-                if (matchedRows.length > 0) {
-                    totalMatches += matchedRows.length;
+                if (filteredIndices.length > 0) {
+                    totalMatches += filteredIndices.length;
 
+                    // 跨欄大標題
                     html += `<tr class="section-header"><td colspan="5">${sec.title}</td></tr>`;
                     
+                    // 電腦版副標題表頭
                     html += `<tr class="sub-header">`;
                     for (let h of sec.headers) {
                         html += `<td>${h || ''}</td>`;
                     }
                     html += `</tr>`;
                     
-                    for (let r of matchedRows) {
-                        html += `<tr class="data-row">`;
+                    // 資料列
+                    for (let rIdx of filteredIndices) {
+                        let r = sec.rows[rIdx];
+                        let meta = (sec.rowMetadata && sec.rowMetadata[rIdx]) ? sec.rowMetadata[rIdx] : {};
+                        let matchType = meta.matchType; // 'same-day' | 'next-day' | null
+
+                        // 樣式類別
+                        let rowClass = 'data-row';
+
+                        if (matchType === 'same-day') {
+                            rowClass += ' row-same-day';
+                        } else if (matchType === 'next-day') {
+                            rowClass += ' row-next-day';
+                        }
+
+                        html += `<tr class="${rowClass}">`;
+                        
+                        let seatVal = r[0] || '';
+                        let idVal = r[1] || '';
+                        let gardenVal = r[2] || '';
+                        let masterVal = r[3] || '';
+                        let teaVal = r[4] || '';
+
+                        // 電腦版 5 個 td
                         for (let i = 0; i < 5; i++) {
                             let cellVal = r[i] || '';
-                            if (i === 1 && searchTerm) {
-                                html += `<td class="highlight font-bold text-emerald-900 bg-amber-200">${cellVal}</td>`;
+                            let isHighlighted = searchTerm && String(cellVal).toLowerCase().includes(searchTerm);
+                            
+                            if (isHighlighted) {
+                                html += `<td class="hidden md:table-cell highlight font-bold text-emerald-950 bg-amber-200">${cellVal}</td>`;
                             } else {
-                                html += `<td>${cellVal}</td>`;
+                                html += `<td class="hidden md:table-cell">${cellVal}</td>`;
                             }
                         }
+
+                        // 手機版專屬兩行緊湊卡片呈現 (純底色標記，無文字標籤)
+                        let seatDisplay = searchTerm && String(seatVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${seatVal}</span>` : seatVal;
+                        let idDisplay = searchTerm && String(idVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${idVal}</span>` : idVal;
+                        let teaDisplay = searchTerm && String(teaVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${teaVal}</span>` : teaVal;
+                        let gardenDisplay = searchTerm && String(gardenVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${gardenVal}</span>` : gardenVal;
+                        let masterDisplay = searchTerm && String(masterVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${masterVal}</span>` : masterVal;
+
+                        // 手機版席次標籤樣式：依連席類型切換顏色
+                        let seatBadgeClass = 'seat-badge';
+                        if (matchType === 'same-day') {
+                            seatBadgeClass += ' badge-same-day';
+                        } else if (matchType === 'next-day') {
+                            seatBadgeClass += ' badge-next-day';
+                        }
+
+                        html += `
+                            <td class="md:hidden block w-full">
+                                <div class="mobile-card-row1">
+                                    <span class="${seatBadgeClass}">席次 ${seatDisplay}</span>
+                                    <span class="id-badge">#${idDisplay}</span>
+                                    <span class="mobile-tea-title">${teaDisplay || '（無自信作）'}</span>
+                                </div>
+                                <div class="mobile-card-row2">
+                                    <span class="mobile-tea-garden">
+                                        <img src="https://paymiou.github.io/toaf-organictea/tea-seats/tea-leaf.png" alt="茶葉" class="mobile-tea-icon">
+                                        <span>${gardenDisplay}</span>
+                                    </span>
+                                    <span class="mobile-master">
+                                        <span class="id-badge">茶師 ${masterDisplay || '-'}</span>
+                                    </span>
+                                </div>
+                            </td>
+                        `;
+
                         html += `</tr>`;
                     }
                 }
@@ -298,7 +665,7 @@
             if (totalMatches === 0) {
                 tbody.innerHTML = '';
                 document.getElementById('table-wrapper').classList.add('hidden');
-                noResult.innerHTML = `查無編號「<span class="text-red-600 font-bold">${searchTerm}</span>」的茶席資料，請確認編號是否正確。`;
+                noResult.innerHTML = `查無符合「<span class="text-red-600 font-bold">${escapeHtml(searchTerm)}</span>」的茶席資料，請嘗試其他關鍵字或切換日期。`;
                 noResult.classList.remove('hidden');
             } else {
                 tbody.innerHTML = html;
