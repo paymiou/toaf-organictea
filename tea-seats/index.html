@@ -258,9 +258,18 @@
                 margin-top: 2px;
             }
 
-            .mobile-master {
+            .mobile-master-badge {
+                background-color: #374151;
+                color: #ffffff;
+                font-size: 0.75rem;
+                font-weight: 600;
+                padding: 2px 7px;
+                border-radius: 4px;
                 white-space: nowrap;
                 flex-shrink: 0;
+                display: inline-flex;
+                align-items: center;
+                gap: 2px;
             }
 
             .highlight-tag { 
@@ -632,7 +641,16 @@
                     // 電腦版副標題表頭
                     html += `<tr class="sub-header">`;
                     for (let h of sec.headers) {
-                        html += `<td>${h || ''}</td>`;
+                        let headerText = h || '';
+                        if (headerText === '茶園名稱') {
+                            html += `<td><span class="inline-flex items-center justify-center gap-1.5"><img src="https://paymiou.github.io/toaf-organictea/tea-seats/tea-leaf.png" alt="茶葉" class="w-4 h-4 object-contain inline-block align-middle"><span>${headerText}</span></span></td>`;
+                        } else if (headerText === '茶師') {
+                            html += `<td><span class="inline-flex items-center justify-center gap-1.5"><img src="https://paymiou.github.io/toaf-organictea/tea-seats/tea-pot.png" alt="茶壺" class="w-4 h-4 object-contain inline-block align-middle"><span>${headerText}</span></span></td>`;
+                        } else if (headerText === '自信作') {
+                            html += `<td><span class="inline-flex items-center justify-center gap-1.5"><img src="https://paymiou.github.io/toaf-organictea/tea-seats/green-tea.png" alt="茶杯" class="w-4 h-4 object-contain inline-block align-middle"><span>${headerText}</span></span></td>`;
+                        } else {
+                            html += `<td>${headerText}</td>`;
+                        }
                     }
                     html += `</tr>`;
                     
@@ -700,9 +718,7 @@
                                         <img src="https://paymiou.github.io/toaf-organictea/tea-seats/tea-leaf.png" alt="茶葉" class="mobile-tea-icon">
                                         <span>${gardenDisplay}</span>
                                     </span>
-                                    <span class="mobile-master">
-                                        <span class="id-badge">茶師 ${masterDisplay || '-'}</span>
-                                    </span>
+                                    <span class="mobile-master-badge">茶師 ${masterDisplay || '-'}</span>
                                 </div>
                             </td>
                         `;
