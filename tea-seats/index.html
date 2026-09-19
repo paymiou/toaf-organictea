@@ -259,8 +259,8 @@
             }
 
             .mobile-master-badge {
-                background-color: #374151;
-                color: #ffffff;
+                background-color: #e5e7eb;
+                color: #1f2937;
                 font-size: 0.75rem;
                 font-weight: 600;
                 padding: 2px 7px;
@@ -322,7 +322,10 @@
             </div>
 
             <div class="flex items-center w-full md:w-auto relative">
-                <label for="id-search" class="font-bold text-gray-700 mr-2 whitespace-nowrap w-[115px] shrink-0 md:w-auto">🔍 搜尋：</label>
+                <label for="id-search" class="font-bold text-gray-700 mr-2 whitespace-nowrap w-[115px] shrink-0 md:w-auto">
+                    <span class="inline md:hidden">🔍 搜　　尋：</span>
+                    <span class="hidden md:inline">🔍 搜尋：</span>
+                </label>
                 <input type="text" id="id-search" placeholder="輸入編號、茶園、茶師或茶名" class="w-full md:w-64 border-2 border-emerald-600 rounded-lg p-2 pr-8 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 shadow-sm transition" oninput="applyFilters()">
                 <button type="button" id="clear-search" onclick="clearSearchInput()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden text-sm font-bold p-1" title="清除搜尋">✕</button>
             </div>
