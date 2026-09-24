@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 有機’島茶 茶席區 每日席位表</title>
     
-    <!-- 引入 PapaParse 與 Tailwind CSS -->
+    <!-- 引入 PapaParse、html2canvas 與 Tailwind CSS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
@@ -27,27 +28,42 @@
             width: 100%; 
             border-collapse: collapse; 
             table-layout: fixed; 
+            text-align: center;
         }
         
-        /* 基本 td 設定 */
+        /* 基本 td 設定：強制水平與垂直置中 */
         td { 
             border: 1px solid #d1d5db; 
-            padding: 10px 4px; 
+            padding: 6px 4px; 
             word-wrap: break-word; 
+            text-align: center !important;
+            vertical-align: middle !important;
+            line-height: 1 !important;
+        }
+
+        /* 單元格內部置中包裝容器，專門確保 html2canvas 繪製時維持正中央，並做中文字型 baseline 向上修正 */
+        .cell-center-wrap {
+            width: 100%;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            margin: 0 auto;
+            min-height: 32px;
+            line-height: 1 !important;
+            transform: translateY(-3px); /* 向上修正中文字體先天偏下問題 */
         }
 
         /* --- 連席色彩高亮設定 (通用) --- */
-        /* 1. 同日上下午同一席位 (粉紅色) */
         .row-same-day {
-            background-color: #fdf2f8 !important; /* light pink */
+            background-color: #fdf2f8 !important;
         }
         .row-same-day:hover {
             background-color: #fce7f3 !important;
         }
 
-        /* 2. 下午到隔日上午同一席位 (藍色) */
         .row-next-day {
-            background-color: #f0f9ff !important; /* light blue */
+            background-color: #f0f9ff !important;
         }
         .row-next-day:hover {
             background-color: #e0f2fe !important;
@@ -56,41 +72,58 @@
         /* --- 電腦版樣式 (螢幕 > 768px) --- */
         @media (min-width: 768px) {
             .table-container { overflow-y: auto; }
-            table { min-width: 750px; }
+            table { min-width: 780px; }
 
-            /* 席次與編號：維持標準字級、緊湊欄寬、置中 */
+            /* 電腦版表格單元格：全數垂直水平置中與顯著加大字體 */
+            .data-row td {
+                font-size: 1.25rem; /* 字體顯著加大 */
+                font-weight: 500;
+                vertical-align: middle !important;
+                text-align: center !important;
+                padding: 6px 4px 8px 4px; /* 平衡上下間距 */
+            }
+
+            /* 席次與編號：欄寬微幅放寬，容納加大文字不折行 */
             .data-row td:nth-child(1), .sub-header td:nth-child(1) { 
-                width: 48px;
-                max-width: 48px;
-                text-align: center;
+                width: 60px;
+                max-width: 60px;
+                text-align: center !important;
+                vertical-align: middle !important;
                 white-space: nowrap; 
-                padding: 10px 2px;
-                font-size: 0.95rem;
+                padding: 6px 2px 8px 2px;
+                font-size: 1.25rem;
             }
             .data-row td:nth-child(2), .sub-header td:nth-child(2) { 
-                width: 52px;
-                max-width: 52px;
-                text-align: center;
+                width: 62px;
+                max-width: 62px;
+                text-align: center !important;
+                vertical-align: middle !important;
                 white-space: nowrap; 
-                padding: 10px 2px;
-                font-size: 0.95rem;
+                padding: 6px 2px 8px 2px;
+                font-size: 1.25rem;
             }
-            /* 茶園名稱：寬裕空間、置中 */
+            /* 茶園名稱：寬裕空間、水平垂直置中 */
             .data-row td:nth-child(3), .sub-header td:nth-child(3) { 
-                width: 42%; 
-                text-align: center;
+                width: 38%; 
+                text-align: center !important;
+                vertical-align: middle !important;
+                font-size: 1.25rem;
             }
-            /* 茶師：固定適中寬度、置中 */
+            /* 茶師：固定適中寬度、水平垂直置中 */
             .data-row td:nth-child(4), .sub-header td:nth-child(4) { 
-                width: 75px; 
-                max-width: 75px; 
-                text-align: center;
+                width: 95px; 
+                max-width: 95px; 
+                text-align: center !important;
+                vertical-align: middle !important;
                 white-space: nowrap; 
+                font-size: 1.25rem;
             }
-            /* 自信作：其餘空間填滿、置中 */
+            /* 自信作：其餘空間填滿、水平垂直置中 */
             .data-row td:nth-child(5), .sub-header td:nth-child(5) { 
                 width: auto; 
-                text-align: center;
+                text-align: center !important;
+                vertical-align: middle !important;
+                font-size: 1.25rem;
             }
 
             .section-header td {
@@ -98,6 +131,11 @@
                 top: 0;
                 z-index: 20;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                font-size: 1.45rem; /* 場次標題加大 */
+                font-weight: 700;
+                padding: 10px 8px 12px 8px;
+                vertical-align: middle !important;
+                text-align: center !important;
             }
 
             .sub-header td {
@@ -105,6 +143,11 @@
                 top: 53px; 
                 z-index: 10;
                 border-bottom: 2px solid #9ca3af;
+                font-size: 1.25rem; /* 欄位名稱加大 */
+                font-weight: 700;
+                padding: 8px 4px 10px 4px;
+                vertical-align: middle !important;
+                text-align: center !important;
             }
             .data-row:hover { background-color: #f3f4f6; }
         }
@@ -130,7 +173,7 @@
                 padding: 10px 12px;
                 border-radius: 8px 8px 0 0;
                 margin-top: 16px;
-                text-align: center;
+                text-align: center !important;
                 border: none;
                 box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
             }
@@ -143,7 +186,6 @@
                 margin-bottom: 0;
             }
             
-            /* 手機版卡片維持白底，取消邊框染色與底色染色 */
             .data-row.row-same-day,
             .data-row.row-next-day {
                 background-color: #ffffff !important;
@@ -162,7 +204,6 @@
                 padding: 0;
             }
 
-            /* 手機版兩行式結構 */
             .mobile-card-row1 {
                 display: flex;
                 align-items: flex-start;
@@ -194,15 +235,13 @@
                 margin-top: 1px;
             }
 
-            /* 席次標籤：同日整天連席（粉紅） */
             .seat-badge.badge-same-day {
-                background-color: #db2777 !important; /* 顯眼雅緻的粉紅梅紅 */
+                background-color: #db2777 !important;
                 color: white !important;
             }
 
-            /* 席次標籤：下午連至隔日跨日（藍色） */
             .seat-badge.badge-next-day {
-                background-color: #0284c7 !important; /* 清晰穩重的湛藍 */
+                background-color: #0284c7 !important;
                 color: white !important;
             }
 
@@ -281,11 +320,6 @@
             }
         }
 
-        /* 手機版右下角回到頂部按鈕 (TOP) */
-        #back-to-top-btn {
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
         /* 跨欄大標題基本樣式 */
         .section-header td {
             background-color: #065f46;
@@ -294,23 +328,47 @@
             font-size: 1.15rem;
             letter-spacing: 1px;
             padding: 12px;
-            text-align: center;
+            text-align: center !important;
         }
 
         .sub-header td {
             background-color: #e5e7eb;
             color: #374151;
             font-weight: bold;
+            text-align: center !important;
+        }
+
+        /* 輕量提示通知 (Toast) */
+        #toast-notification {
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
     </style>
 </head>
 <body class="p-3 md:p-6">
 
-    <div class="max-w-6xl mx-auto bg-white p-4 md:p-6 rounded-xl shadow-lg">
-        <!-- 頂部標題區 -->
-        <h1 class="text-2xl md:text-3xl font-bold text-center text-emerald-800 mb-4 md:mb-6 leading-relaxed">
-            2026 有機’島茶 茶席區 <br class="block md:hidden"> 每日席位表
-        </h1>
+    <div class="max-w-6xl mx-auto bg-white p-4 md:p-6 rounded-xl shadow-lg relative">
+        
+        <!-- 頂部標題區 (電腦版包含右上角「下載當日茶席」按鈕) -->
+        <div class="relative flex items-center justify-center mb-4 md:mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-center text-emerald-800 leading-relaxed">
+                2026 有機’島茶 茶席區 <br class="block md:hidden"> 每日席位表
+            </h1>
+
+            <!-- 電腦版專屬：右上角 下載當日茶席 截圖按鈕 -->
+            <div class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2">
+                <button 
+                    type="button" 
+                    id="download-btn" 
+                    onclick="downloadScheduleScreenshot()" 
+                    title="將當前顯示的茶席表截圖下載為高解析度 PNG 圖片"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-150 active:scale-95 cursor-pointer select-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>下載當日茶席</span>
+                </button>
+            </div>
+        </div>
         
         <!-- 篩選器與搜尋列 -->
         <div id="filter-container" class="mb-6 flex flex-col md:flex-row justify-center items-center gap-4 hidden">
@@ -345,10 +403,10 @@
             <table id="schedule-table">
                 <!-- 固定欄寬分配 -->
                 <colgroup>
-                    <col style="width: 48px;">
-                    <col style="width: 52px;">
-                    <col style="width: 42%;">
-                    <col style="width: 75px;">
+                    <col style="width: 56px;">
+                    <col style="width: 58px;">
+                    <col style="width: 40%;">
+                    <col style="width: 88px;">
                     <col style="width: auto;">
                 </colgroup>
                 <tbody id="table-body"></tbody>
@@ -368,6 +426,11 @@
         </svg>
         <span class="text-[10px] font-bold tracking-wider leading-none mt-0.5">TOP</span>
     </button>
+
+    <!-- 浮動提示元件 (Toast) -->
+    <div id="toast-notification" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 bg-gray-900/90 text-white text-sm font-medium rounded-lg shadow-xl backdrop-blur pointer-events-none opacity-0 translate-y-2 transition-all duration-300 flex items-center gap-2">
+        <span id="toast-message">訊息內容</span>
+    </div>
 
     <script>
         const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRNFwBpZ_uwSAPgPaeKhfgZgwKnkCoSbV_ApgmgpQ8_KIqpm_iHKNrpiq-z71vUUWJBMEmvqRjsEfwb/pub?gid=1255472775&single=true&output=csv';
@@ -449,7 +512,7 @@
                     let sectionTitle = `${currentDate} 上午 09:00-13:00`;
                     currentSection = {
                         date: currentDate,
-                        timePeriod: 'morning', // morning | afternoon
+                        timePeriod: 'morning',
                         title: sectionTitle,
                         headers: ["席次", "編號", "茶園名稱", "茶師", "自信作"],
                         rows: []
@@ -484,18 +547,14 @@
                 }
             }
 
-            // 計算席位連席狀態 (粉紅: 同日上下午同一席 / 藍色: 下午到隔日同一席)
             calculateConsecutiveSeats();
-
             buildFilterOptions();
             applyFilters();
             
             setTimeout(adjustStickyHeader, 100);
         }
 
-        /* 分析並標記連席資訊 */
         function calculateConsecutiveSeats() {
-            // 建立依場次次序排列的席位對照表
             for (let sIdx = 0; sIdx < allSections.length; sIdx++) {
                 let sec = allSections[sIdx];
                 sec.rowMetadata = [];
@@ -504,12 +563,10 @@
                     let r = sec.rows[rIdx];
                     let seatNum = (r[0] || '').trim();
                     let farmName = (r[2] || '').trim();
-                    let farmerId = (r[1] || '').trim(); // 編號
-                    let masterName = (r[3] || '').trim(); // 茶師
+                    let farmerId = (r[1] || '').trim();
 
-                    let matchType = null; // 'same-day' (粉紅) | 'next-day' (藍色) | null
+                    let matchType = null;
 
-                    // 檢查連席的關鍵依據：席次相同，且 (茶園名稱相同 或 編號相同)
                     function isSameFarm(rTarget) {
                         if (!rTarget) return false;
                         let tSeat = (rTarget[0] || '').trim();
@@ -520,8 +577,6 @@
                         return (farmName && tFarm === farmName) || (farmerId && tId === farmerId);
                     }
 
-                    // 規則 1：同日上下午同一席位 (粉紅)
-                    // 若當前是上午，比對同一天下午的同席位
                     if (sec.timePeriod === 'morning') {
                         let afternoonSec = allSections.find(s => s.date === sec.date && s.timePeriod === 'afternoon');
                         if (afternoonSec) {
@@ -536,8 +591,6 @@
                         }
                     }
 
-                    // 規則 2：下午到隔日同一席位 (藍色)
-                    // 若當前是下午，且沒有同日上下午粉紅標記時，比對相鄰下一場次（隔日上午）
                     if (!matchType && sec.timePeriod === 'afternoon') {
                         let nextSec = allSections[sIdx + 1];
                         if (nextSec && nextSec.timePeriod === 'morning') {
@@ -545,7 +598,6 @@
                             if (matched) matchType = 'next-day';
                         }
                     } else if (!matchType && sec.timePeriod === 'morning') {
-                        // 若當前是上午，比對前一場次（前一日下午）
                         let prevSec = allSections[sIdx - 1];
                         if (prevSec && prevSec.timePeriod === 'afternoon') {
                             let matched = prevSec.rows.find(row => isSameFarm(row));
@@ -578,22 +630,17 @@
             applyFilters();
         }
 
-        // 點擊茶園名稱快速搜尋該茶園所有時段席位
         window.searchGarden = function(gardenName) {
             if (!gardenName) return;
             const searchInput = document.getElementById('id-search');
             const dateFilter = document.getElementById('date-filter');
             
-            // 將搜尋欄填入茶園名稱
             searchInput.value = gardenName.trim();
-            // 切換為「全部場次」，以查看該茶園的所有席位
             if (dateFilter) {
                 dateFilter.value = 'all';
             }
-            // 執行篩選
             applyFilters();
 
-            // 平滑滾動至篩選區上方，方便檢視
             const filterContainer = document.getElementById('filter-container');
             if (filterContainer) {
                 filterContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -623,7 +670,6 @@
             for (let sec of allSections) {
                 if (selectedDate !== 'all' && sec.date !== selectedDate) continue;
 
-                // 篩選匹配
                 let filteredIndices = [];
                 for (let idx = 0; idx < sec.rows.length; idx++) {
                     let row = sec.rows[idx];
@@ -638,34 +684,47 @@
                 if (filteredIndices.length > 0) {
                     totalMatches += filteredIndices.length;
 
-                    // 跨欄大標題
-                    html += `<tr class="section-header"><td colspan="5">${sec.title}</td></tr>`;
+                    // 場次標題列：強制水平垂直置中
+                    html += `
+                        <tr class="section-header text-center">
+                            <td colspan="5" class="text-center align-middle" style="text-align: center !important; vertical-align: middle !important;">
+                                <div class="cell-center-wrap" style="width: 100%; text-align: center !important; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                    ${sec.title}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
                     
-                    // 電腦版副標題表頭
-                    html += `<tr class="sub-header">`;
+                    // 次標題列：各欄位強制水平垂直置中
+                    html += `<tr class="sub-header text-center">`;
                     for (let h of sec.headers) {
                         let headerText = h || '';
+                        let content = '';
                         if (headerText === '茶園名稱') {
-                            html += `<td><span class="inline-flex items-center justify-center gap-1.5"><img src="https://paymiou.github.io/toaf-organictea/tea-seats/tea-leaf.png" alt="茶葉" class="w-4 h-4 object-contain inline-block align-middle"><span>${headerText}</span></span></td>`;
+                            content = `<span class="inline-flex items-center justify-center gap-1.5"><img src="https://paymiou.github.io/toaf-organictea/tea-seats/tea-leaf.png" alt="茶葉" class="w-4 h-4 object-contain inline-block align-middle"><span>${headerText}</span></span>`;
                         } else if (headerText === '茶師') {
-                            html += `<td><span class="inline-flex items-center justify-center gap-1.5"><img src="https://paymiou.github.io/toaf-organictea/tea-seats/tea-pot.png" alt="茶壺" class="w-4 h-4 object-contain inline-block align-middle"><span>${headerText}</span></span></td>`;
+                            content = `<span class="inline-flex items-center justify-center gap-1.5"><img src="https://paymiou.github.io/toaf-organictea/tea-seats/tea-pot.png" alt="茶壺" class="w-4 h-4 object-contain inline-block align-middle"><span>${headerText}</span></span>`;
                         } else if (headerText === '自信作') {
-                            html += `<td><span class="inline-flex items-center justify-center gap-1.5"><img src="https://paymiou.github.io/toaf-organictea/tea-seats/green-tea.png" alt="茶杯" class="w-4 h-4 object-contain inline-block align-middle"><span>${headerText}</span></span></td>`;
+                            content = `<span class="inline-flex items-center justify-center gap-1.5"><img src="https://paymiou.github.io/toaf-organictea/tea-seats/green-tea.png" alt="茶杯" class="w-4 h-4 object-contain inline-block align-middle"><span>${headerText}</span></span>`;
                         } else {
-                            html += `<td>${headerText}</td>`;
+                            content = headerText;
                         }
+                        html += `
+                            <td class="text-center align-middle" style="text-align: center !important; vertical-align: middle !important;">
+                                <div class="cell-center-wrap" style="width: 100%; text-align: center !important; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                    ${content}
+                                </div>
+                            </td>
+                        `;
                     }
                     html += `</tr>`;
                     
-                    // 資料列
                     for (let rIdx of filteredIndices) {
                         let r = sec.rows[rIdx];
                         let meta = (sec.rowMetadata && sec.rowMetadata[rIdx]) ? sec.rowMetadata[rIdx] : {};
-                        let matchType = meta.matchType; // 'same-day' | 'next-day' | null
+                        let matchType = meta.matchType;
 
-                        // 樣式類別
-                        let rowClass = 'data-row';
-
+                        let rowClass = 'data-row text-center';
                         if (matchType === 'same-day') {
                             rowClass += ' row-same-day';
                         } else if (matchType === 'next-day') {
@@ -680,26 +739,26 @@
                         let masterVal = r[3] || '';
                         let teaVal = r[4] || '';
 
-                        // 電腦版 5 個 td
                         for (let i = 0; i < 5; i++) {
                             let cellVal = r[i] || '';
                             let isHighlighted = searchTerm && String(cellVal).toLowerCase().includes(searchTerm);
+                            let highlightClass = isHighlighted ? 'highlight font-bold text-emerald-950 bg-amber-200' : '';
                             
-                            if (isHighlighted) {
-                                html += `<td class="hidden md:table-cell highlight font-bold text-emerald-950 bg-amber-200">${cellVal}</td>`;
-                            } else {
-                                html += `<td class="hidden md:table-cell">${cellVal}</td>`;
-                            }
+                            html += `
+                                <td class="hidden md:table-cell text-center align-middle ${highlightClass}" style="text-align: center !important; vertical-align: middle !important;">
+                                    <div class="cell-center-wrap" style="width: 100%; text-align: center !important; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                        ${cellVal}
+                                    </div>
+                                </td>
+                            `;
                         }
 
-                        // 手機版專屬兩行緊湊卡片呈現 (純底色標記，無文字標籤)
                         let seatDisplay = searchTerm && String(seatVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${seatVal}</span>` : seatVal;
                         let idDisplay = searchTerm && String(idVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${idVal}</span>` : idVal;
                         let teaDisplay = searchTerm && String(teaVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${teaVal}</span>` : teaVal;
                         let gardenDisplay = searchTerm && String(gardenVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${gardenVal}</span>` : gardenVal;
                         let masterDisplay = searchTerm && String(masterVal).toLowerCase().includes(searchTerm) ? `<span class="highlight-tag">${masterVal}</span>` : masterVal;
 
-                        // 手機版席次標籤樣式：依連席類型切換顏色
                         let seatBadgeClass = 'seat-badge';
                         if (matchType === 'same-day') {
                             seatBadgeClass += ' badge-same-day';
@@ -747,6 +806,166 @@
             document.getElementById('loading').classList.add('hidden');
         }
 
+        async function downloadScheduleScreenshot() {
+            const downloadBtn = document.getElementById('download-btn');
+            const tableWrapper = document.getElementById('table-wrapper');
+            const tbody = document.getElementById('table-body');
+
+            if (!tbody || tbody.children.length === 0) {
+                showToast('⚠️ 目前畫面上沒有可截圖的茶席資料');
+                return;
+            }
+
+            if (typeof html2canvas === 'undefined') {
+                showToast('⚠️ 截圖元件載入中，請稍候重試');
+                return;
+            }
+
+            // 儲存原本按鈕狀態
+            const originalBtnContent = downloadBtn.innerHTML;
+            downloadBtn.disabled = true;
+            downloadBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            downloadBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-1.5 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>產生截圖中...</span>
+            `;
+
+            // 取得目前選擇的日期名稱作為檔案名稱依據
+            const dateSelect = document.getElementById('date-filter');
+            let dateLabel = '全部場次';
+            if (dateSelect && dateSelect.value !== 'all') {
+                dateLabel = dateSelect.options[dateSelect.selectedIndex].text.replace(/[\/\\()]/g, '_');
+            }
+            const filename = `2026有機島茶_每日席位表_${dateLabel}.png`;
+
+            // 暫存並解除容器的高度限制與 sticky 定位，確保完整捕捉
+            const origMaxHeight = tableWrapper.style.maxHeight;
+            const origOverflow = tableWrapper.style.overflow;
+            const stickyHeaders = tableWrapper.querySelectorAll('.section-header td, .sub-header td');
+            const originalPositions = [];
+
+            stickyHeaders.forEach((cell, idx) => {
+                originalPositions[idx] = cell.style.position;
+                cell.style.position = 'static';
+            });
+
+            tableWrapper.style.maxHeight = 'none';
+            tableWrapper.style.overflow = 'visible';
+
+            try {
+                const canvas = await html2canvas(tableWrapper, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    windowWidth: 1000,
+                    onclone: function(clonedDoc) {
+                        // 1. 移除專供手機檢視的第 6 欄隱藏卡片，確保在 html2canvas 渲染時完全符合五欄 colgroup
+                        const mobileCells = clonedDoc.querySelectorAll('#schedule-table td.md\\:hidden');
+                        mobileCells.forEach(el => el.remove());
+
+                        // 2. 注入截圖專用：大幅加大字體 (23-24px)，並透過 line-height 與 vertical padding 強制視覺完美正中
+                        const printStyle = clonedDoc.createElement('style');
+                        printStyle.innerHTML = `
+                            #schedule-table { 
+                                width: 100% !important; 
+                                border-collapse: collapse !important; 
+                                table-layout: fixed !important; 
+                            }
+                            #schedule-table td {
+                                text-align: center !important;
+                                vertical-align: middle !important;
+                                padding: 5px 4px 8px 4px !important;
+                                line-height: 1 !important;
+                            }
+                            #schedule-table .data-row td {
+                                font-size: 23px !important;
+                                font-weight: 600 !important;
+                                color: #111827 !important;
+                                vertical-align: middle !important;
+                            }
+                            #schedule-table .sub-header td {
+                                font-size: 23px !important;
+                                font-weight: 800 !important;
+                                color: #1f2937 !important;
+                                vertical-align: middle !important;
+                                padding: 7px 4px 10px 4px !important;
+                            }
+                            #schedule-table .sub-header img {
+                                width: 22px !important;
+                                height: 22px !important;
+                            }
+                            #schedule-table .section-header td {
+                                font-size: 27px !important;
+                                font-weight: 800 !important;
+                                vertical-align: middle !important;
+                                padding: 12px 8px 14px 8px !important;
+                                background-color: #065f46 !important;
+                                color: #ffffff !important;
+                            }
+                            #schedule-table .cell-center-wrap {
+                                width: 100% !important;
+                                display: flex !important;
+                                align-items: center !important;
+                                justify-content: center !important;
+                                text-align: center !important;
+                                margin: 0 auto !important;
+                                line-height: 1 !important;
+                                transform: translateY(-3.5px) !important; /* 截圖時精確上移 3.5px，達成上下絕對對稱 */
+                            }
+                        `;
+                        clonedDoc.head.appendChild(printStyle);
+                    }
+                });
+
+                // 下載產生之圖片
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showToast('🎉 茶席表截圖已成功下載！');
+            } catch (err) {
+                console.error('截圖產生失敗:', err);
+                showToast('❌ 截圖產生發生錯誤，請稍候重試');
+            } finally {
+                // 還原原本的樣式設定
+                tableWrapper.style.maxHeight = origMaxHeight;
+                tableWrapper.style.overflow = origOverflow;
+                stickyHeaders.forEach((cell, idx) => {
+                    cell.style.position = originalPositions[idx] || '';
+                });
+
+                downloadBtn.disabled = false;
+                downloadBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                downloadBtn.innerHTML = originalBtnContent;
+            }
+        }
+
+        /* 顯示浮動提示通知 */
+        let toastTimeout = null;
+        function showToast(text) {
+            const toast = document.getElementById('toast-notification');
+            const message = document.getElementById('toast-message');
+            if (!toast || !message) return;
+
+            message.textContent = text;
+            toast.classList.remove('opacity-0', 'translate-y-2');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-2');
+            }, 3000);
+        }
+
         function adjustStickyHeader() {
             if (window.innerWidth > 767) {
                 const firstHeader = document.querySelector('.section-header td');
@@ -773,7 +992,6 @@
         window.addEventListener('scroll', function() {
             const topBtn = document.getElementById('back-to-top-btn');
             if (!topBtn) return;
-            // 滾動超過 250px 時顯示按鈕，小於 250px 時平滑隱藏
             if (window.scrollY > 250) {
                 topBtn.classList.remove('opacity-0', 'pointer-events-none');
                 topBtn.classList.add('opacity-100');
