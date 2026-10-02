@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2026佰選茶農資料</title>
+  <!-- 引入 Bootstrap 5 與 Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    body { padding: 20px; background-color: #f8f9fa; }
+    .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .table-container { background: white; border-radius: 8px; padding: 15px; }
+    .spinner-border { width: 3rem; height: 3rem; }
+
+    .col-farm-name {
+      max-width: 130px;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+
+    .custom-search-container { max-width: 320px; }
+    .custom-search-group {
+      border: 3px solid #0d47a1 !important;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #e3f2fd;
+    }
+    
+    .custom-search-group .search-btn {
+      border: none !important;
+      background-color: #bbdefb;
+      color: #0d47a1;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .custom-search-group .search-btn:hover {
+      background-color: #90caf9;
+      color: #0a357a;
+    }
+
+    .custom-search-group .form-control {
+      border: none !important;
+      background-color: #e3f2fd;
+      color: #0d47a1;
+      font-weight: 500;
+      box-shadow: none !important;
+    }
+    .custom-search-group .form-control::placeholder {
+      color: #5c6bc0;
+      font-weight: normal;
+    }
+
+    @media (max-width: 576px) {
+      .custom-search-container { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container my-4">
+    <div class="card p-4">
+      <h2 class="mb-4 text-center text-success">2026佰選茶農資料 - 庫存看板</h2>
+
+      <!-- 搜尋與重新載入區塊 -->
+      <div class="row mb-3 align-items-center justify-content-between">
+        <div class="col-sm-7 custom-search-container">
+          <form onsubmit="event.preventDefault(); filterTable();">
+            <div class="input-group custom-search-group">
+              <button class="btn search-btn" type="button" onclick="filterTable()" title="點擊進行查詢">
+                <i class="bi bi-search"></i>
+              </button>
+              <input type="text" id="searchInput" class="form-control" placeholder="輸入編號(如:1)或茶園名稱..." onkeyup="filterTable()">
+            </div>
+          </form>
+        </div>
+        <div class="col-sm-5 text-end mt-2 mt-sm-0">
+          <button class="btn btn-outline-primary" onclick="loadData()">
+            <i class="bi bi-arrow-clockwise me-1"></i>重新整理資料
+          </button>
+        </div>
+      </div>
+
+      <!-- 載入中動畫 -->
+      <div id="loading" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted">讀取試算表中，請稍候...</p>
+      </div>
+
+      <!-- 資料表格 -->
+      <div class="table-responsive table-container d-none" id="dataContainer">
+        <table class="table table-hover table-striped align-middle">
+          <thead class="table-success">
+            <tr>
+              <th class="text-center" style="width: 20%;">銷售<br>編號</th>
+              <th class="text-center col-farm-name">茶園<br>名稱</th>
+              <th class="text-center" style="width: 25%;">實際<br>庫存量</th>
+              <th class="text-center" style="width: 20%;">庫存<br>提醒</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- 資料動態填入 -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // ⚠️ 【非常重要】請將下方網址替換為您的 GAS 部署網址！ 
+    // ==========================================
+    const API_URL = "https://script.google.com/macros/s/AKfycby...您的GAS應用程式ID.../exec";
+
+    let rawData = [];
+
+    // 防範 XSS 攻擊
+    function escapeHtml(unsafe) {
+      if (unsafe == null) return '';
+      return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // 初始化：頁面載入後自動取得資料
+    window.onload = function() {
+      loadData();
+    };
+
+    // 透過 fetch 向 GAS 後端拿取 JSON 資料
+    function loadData() {
+      document.getElementById('loading').classList.remove('d-none');
+      document.getElementById('dataContainer').classList.add('d-none');
+
+      const keywordInput = document.getElementById('searchInput');
+      if (keywordInput) keywordInput.value = '';
+
+      fetch(API_URL)
+        .then(response => {
+          if (!response.ok) throw new Error("網路請求失敗，請檢查 API 網址是否正確");
+          return response.json();
+        })
+        .then(data => {
+          rawData = data; 
+          renderTable(rawData);
+        })
+        .catch(err => {
+          alert("讀取失敗: " + err.message + "\n\n(提示：請確認您的 GAS 有設定為「所有人」皆可存取)");
+          document.getElementById('loading').classList.add('d-none');
+        });
+    }
+
+    // 渲染表格
+    function renderTable(dataToRender) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      if (!dataToRender || dataToRender.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">無符合資料</td></tr>';
+      } else {
+        dataToRender.forEach(item => {
+          const stock = Number(item.actualStock);
+          const specialStatus = item.specialStatus || ''; // 取得試算表的備註欄
+
+          let noticeBadge = '';
+          
+          // 判斷順序：備註狀態 -> 庫存數字 -> 正常
+          if (specialStatus.includes('取消展售')) {
+            noticeBadge = '<span class="badge bg-secondary fs-6"><i class="bi bi-x-circle-fill me-1"></i>取消展售</span>';
+          } else if (specialStatus.includes('售完不補')) {
+            noticeBadge = '<span class="badge bg-dark fs-6"><i class="bi bi-slash-circle me-1"></i>售完不補</span>';
+          } else if (stock < 11) {
+            noticeBadge = '<span class="badge bg-danger fs-6"><i class="bi bi-exclamation-triangle-fill me-1"></i>需補貨</span>';
+          } else {
+            noticeBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle">庫存正常</span>';
+          }
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="text-center"><strong>${escapeHtml(item.salesId)}</strong></td>
+            <td class="col-farm-name">${escapeHtml(item.farmName)}</td>
+            <td class="text-center font-weight-bold ${stock < 0 ? 'text-danger' : 'text-primary'}">
+              ${stock.toLocaleString()}
+            </td>
+            <td class="text-center">${noticeBadge}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('loading').classList.add('d-none');
+      document.getElementById('dataContainer').classList.remove('d-none');
+    }
+
+    // 搜尋功能
+    function filterTable() {
+      const keywordInput = document.getElementById('searchInput');
+      if (!keywordInput) return;
+
+      const keyword = keywordInput.value.trim().toLowerCase();
+
+      // 如果搜尋框清空，直接渲染完整的 rawData
+      if (!keyword) {
+        renderTable(rawData);
+        return;
+      }
+
+      // 判斷是否為純數字字串
+      const isPureNumber = /^\d+$/.test(keyword);
+
+      const filtered = rawData.filter(item => {
+        const salesIdStr = item.salesId !== null && item.salesId !== undefined ? String(item.salesId).toLowerCase() : '';
+        const farmNameStr = item.farmName !== null && item.farmName !== undefined ? String(item.farmName).toLowerCase() : '';
+
+        if (isPureNumber) {
+          // 純數字：精確比對「銷售編號」
+          const searchNum = parseInt(keyword, 10);
+          const idNum = parseInt(salesIdStr, 10);
+          return searchNum === idNum;
+        } else {
+          // 包含文字：模糊比對「銷售編號」或「茶園名稱」
+          return salesIdStr.includes(keyword) || farmNameStr.includes(keyword);
+        }
+      });
+
+      renderTable(filtered);
+    }
+  </script>
+</body>
+</html>
