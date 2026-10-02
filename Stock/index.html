@@ -174,12 +174,16 @@ function loadData() {
           
           // 判斷順序：備註狀態 -> 庫存數字 -> 正常
           if (specialStatus.includes('取消展售')) {
-            noticeBadge = '<span class="badge bg-secondary fs-6"><i class="bi bi-x-circle-fill me-1"></i>取消展售</span>';
+            // ⭐ 移除了 fs-6，變成預設的較小標籤
+            noticeBadge = '<span class="badge bg-secondary"><i class="bi bi-x-circle-fill me-1"></i>取消展售</span>';
           } else if (specialStatus.includes('售完不補')) {
-            noticeBadge = '<span class="badge bg-dark fs-6"><i class="bi bi-slash-circle me-1"></i>售完不補</span>';
+            // ⭐ 移除了 fs-6，變成預設的較小標籤
+            noticeBadge = '<span class="badge bg-dark"><i class="bi bi-slash-circle me-1"></i>售完不補</span>';
           } else if (stock < 11) {
+            // ⭐ 保留 fs-6，讓需要處理的「需補貨」維持較大較醒目！
             noticeBadge = '<span class="badge bg-danger fs-6"><i class="bi bi-exclamation-triangle-fill me-1"></i>需補貨</span>';
           } else {
+            // 預設較小尺寸
             noticeBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle">庫存正常</span>';
           }
 
