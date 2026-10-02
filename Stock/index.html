@@ -131,17 +131,20 @@
       loadData();
     };
 
-    // 透過 fetch 向 GAS 後端拿取 JSON 資料
-    function loadData() {
+function loadData() {
       document.getElementById('loading').classList.remove('d-none');
       document.getElementById('dataContainer').classList.add('d-none');
 
       const keywordInput = document.getElementById('searchInput');
       if (keywordInput) keywordInput.value = '';
 
-      fetch(API_URL)
+      // ⭐ 關鍵修改：加上 { method: "GET", redirect: "follow" }
+      fetch(API_URL, {
+        method: "GET",
+        redirect: "follow" 
+      })
         .then(response => {
-          if (!response.ok) throw new Error("網路請求失敗，請檢查 API 網址是否正確");
+          if (!response.ok) throw new Error("網路請求失敗，HTTP 狀態碼：" + response.status);
           return response.json();
         })
         .then(data => {
@@ -149,7 +152,8 @@
           renderTable(rawData);
         })
         .catch(err => {
-          alert("讀取失敗: " + err.message + "\n\n(提示：請確認您的 GAS 有設定為「所有人」皆可存取)");
+          console.error("Fetch 錯誤詳細資訊:", err); // 在 F12 控制台印出真實錯誤
+          alert("讀取失敗: " + err.message + "\n\n(請按 F12 開啟開發者工具查看 Console 錯誤訊息)");
           document.getElementById('loading').classList.add('d-none');
         });
     }
